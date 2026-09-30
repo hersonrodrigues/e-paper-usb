@@ -1,112 +1,161 @@
+<p align="center">
+  <img src="docs/assets/readme-banner.svg" alt="E-paper USB — an illustration of a phone sending a four-color image to an e-paper display" width="1120">
+</p>
+
 # E-paper USB
 
-Android USB OTG app and local browser tools for sending photos to a compatible Good Display 800 × 480 four-color e-paper controller.
+**Turn a photo on your Android phone into an image for your e-paper display.** Choose a photo, adjust the preview, and send it directly over a USB OTG cable. Designed as an Android alternative to the Windows ImageToUSB workflow, with a separate local browser app for desktop use.
 
-## Android app
+**[Get started](#get-started)** · **[Example hardware](#example-hardware)** · **[Build the app](#build-the-app)** · **[Language summaries](#language-summaries)** · **[Test results](docs/validation.md)**
 
-Open [`android/`](android/) in Android Studio. The app selects a photo with the system picker, normalizes EXIF orientation, previews the exact four-color payload, and sends it over a CH340 USB OTG connection after a valid ImageToUSB v4.0 handshake. Sending requires an explicit tap.
+## What it does
 
-The app follows the device language automatically. Supported variants: English, Simplified Chinese, Traditional Chinese, Portuguese (Brazil), Portuguese (Portugal), Spanish, French, Italian, German, Korean, Japanese, and Hindi. Android 13+ also supports selecting a language for this app in system settings. Other languages fall back to English. This localization applies to the Android app; the separate browser interface remains in English.
+- **Prepare your photo:** select an image, rotate it, and choose a proportional crop or white borders.
+- **Preview four colors:** convert to black, white, yellow and red at **800 × 480**, with optional dithering. The preview and transmitted data use the same final image.
+- **Send by cable:** connect a CH340-based controller through USB OTG, grant USB access, and tap **Send**. Connecting alone never starts a transfer.
+- **Keep photos local:** Android processes images on the phone and has no internet permission. Diagnostic logs can be exported locally.
+- **Use your language:** the Android app follows device language settings, with **12 locale variants** and English fallback. Android 13+ also offers per-app language settings.
 
-- [Android build, usage and physical test instructions](android/README.md)
-- [Validation and hardware status](docs/validation.md)
-- [Translation catalogs](android/tools/locales/)
+| Android app | Desktop browser app |
+| --- | --- |
+| Android 8.0+ with USB host / OTG | Local app served with Node.js 20+ |
+| Direct USB transfer from the phone | USB transfer in desktop Chrome or Edge |
+| Photo picker, preview, four-color conversion | Image conversion, PNG/C export, serial upload |
+| Multilingual interface | English interface |
+
+## Example hardware
+
+**[Good Display GDP075FU1 — view the manufacturer's product page](https://www.good-display.com/product/640.html)**
+
+The app's target profile is based on the **GDP075FU1 USB model** and the ImageToUSB v4.0 protocol. Good Display lists this model with a **7.5-inch, 800 × 480 display**, **black / white / red / yellow** colors, and a **Micro USB connection**. The linked page also includes the GDP075FW1 and GDP075FW1B Wi-Fi models; this project's USB profile targets GDP075FU1. [Manufacturer specifications](https://www.good-display.com/product/640.html)
+
+> **Compatibility status:** CH340 detection and serial-port opening have been verified on a Pixel 10. A complete image transfer and physical screen refresh still need hardware validation. Check the controller and panel model; a CH340 identifier alone does not establish compatibility. [See validation details](docs/validation.md).
+
+## Get started
+
+1. Build and install the Android app using the instructions below.
+2. Connect the display to your phone with a suitable **USB OTG adapter and data cable**.
+3. Open **E-paper USB**, tap **Connect USB**, and allow access when Android asks.
+4. Select a photo or **Color test**, adjust the preview, and tap **Send to display**. Keep the app open and the display connected.
+
+**Send becomes available when both an image and an authorized USB connection are ready.** After a failed or interrupted transfer, power the display off and on before retrying. A completed send confirms bytes were written; check the physical display to confirm the result.
+
+## Build the app
+
+Open [`android/`](android/) in Android Studio and configure the SDK. On macOS, from the repository root:
 
 ```sh
-cd android
-./tools/build-macos.sh
+android/tools/build-macos.sh
 ```
 
-Debug APK: `android/app/build/outputs/apk/debug/app-debug.apk`. Android SDK/JDK setup is described in the Android README. The repository contains source and tests; SDK paths, signing keys, build caches and device logs are excluded.
+The script runs Android tests, Lint, and the debug build. Install the generated APK at `android/app/build/outputs/apk/debug/app-debug.apk`. Build dependencies require internet; the installed Android app works locally. See the [Android guide](android/README.md) for SDK requirements, installation, and the physical test procedure.
 
-## Browser application
-
-
-A local web app for fitting an image to an e-paper display, previewing its palette, exporting C image data, and sending pixels directly over USB serial.
-
-The default is **GDP075FU1 / ImageToUSB v4.0: 800 × 480, black/white/red/yellow**. This matches the manufacturer's manual supplied by the user. The browser adapter was recovered from the user's `ImageToUSB v4.0.exe`; it implements the 12-byte handshake, four-color encoding, and paced image transfer. Automated tests and a simulated device validate the host implementation; a physical display refresh remains unverified.
-
-## Run and send an image
-
-Install Node.js 20 or newer, then run:
+To run the separate **desktop browser app**:
 
 ```sh
 npm start
 ```
 
-Open **http://localhost:5173** in desktop Chrome or Edge. No npm dependencies are needed. On Windows, double-click `start-windows.cmd` if preferred. Keep the terminal open while using the app.
+Open **http://localhost:5173** in desktop Chrome or Edge. No npm dependencies are required. See the [browser guide](docs/browser.md) for profiles, exports and serial upload.
 
-1. Connect GDP075FU1 using a Micro USB **data** cable. Close ImageToUSB and other programs using its serial port. On Windows, install the CH340 driver if no COM port appears.
-2. Choose an image or try the built-in sample. Leave the canvas at **800 × 480** and colors at **black / white / red / yellow**, including for black-and-white artwork on GDP075FU1.
-3. Adjust fit, rotation, contrast, and dithering. Check the preview.
-4. Leave **GDP075FU1 · ImageToUSB v4.0** selected under upload software.
-5. Click **Choose serial port**, select the device's COM/USB serial port, then **Send image**.
-6. The app waits for a valid handshake before sending any image bytes. After transfer, keep USB connected and allow approximately **20 seconds** for the physical display to refresh.
+## Language summaries
 
-Successful serial writes do not prove the screen refreshed: this protocol has no final refresh acknowledgment. If a transfer is stopped, fails, or times out, reset/reconnect the display before retrying. Stop cancels a handshake wait or pauses between image writes. If an OS serial write stalls, unplug/reset the board to release it.
+The following summaries cover every language variant supported by the **Android app**. Expand a language to read a short overview and find the example product.
 
-Only an 800 × 480 canvas is supported by the v4.0 adapter. Its 2- and 3-color settings support other matching v4.0 devices; the supplied GDP075FU1 manual specifically requires **4-Color**. Six-color mode is unavailable with this profile. Choose **Export only** or the separate ESP32 profile for other conversion formats.
+<details>
+<summary><strong>English</strong></summary>
 
-Image processing happens locally. The server binds only to the loopback interface; images are not sent to a service. PNG, JPEG, WebP, and BMP are supported when the browser can decode them, with 25 MB / 50 megapixel input limits. Convert HEIC, RAW, or SVG first. Safari and Firefox can convert/export; USB upload uses [Web Serial in desktop Chrome/Edge](https://developer.chrome.com/docs/capabilities/serial).
+Select a photo on your Android phone, crop or rotate it, preview it in four colors, and send it to an e-paper display through USB OTG. Photos are processed locally, and the app follows your device language. Example hardware: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); physical image transfer still needs validation.
 
-## GDP075FU1 data and protocol
+</details>
 
-- [Collected specifications (JSON)](docs/gdp075fu1-specs.json)
-- [Archived vendor manual](docs/vendor/EN-GDP075FU1.pdf), V1.0, dated 2024-12-16
-- [Protocol, packet fields, encoding, and source evidence](docs/imagetousb40-protocol.md)
+<details>
+<summary><strong>简体中文 · Simplified Chinese</strong></summary>
 
-The supplied manual specifies a 7.5-inch four-color display, STM32F103C6T6 MCU, CH340 serial connection, 5 V Micro USB power, and an approximately 20-second refresh. It documents the Windows workflow; the byte-level transport comes from static inspection of the EXE.
+在 Android 手机上选择照片，裁剪或旋转，预览四色效果，然后通过 USB OTG 将图像发送到电子纸屏幕。照片在本地处理，应用会跟随设备的语言设置。参考设备：[Good Display GDP075FU1（USB 版）](https://www.good-display.com/product/640.html)；图像传输仍需在实际设备上验证。
 
-The browser uses 115200 baud, 8N1, RTS=true, DTR=false. It sends a 12-byte request containing one-plane byte count, color mode, model code, red flag, and checksum, then validates a 10-byte device reply. Image payload is written in 4,096-byte blocks followed by CRLF, with 100 ms pauses after full blocks.
+</details>
 
-| ImageToUSB v4.0 mode | Payload | Encoding |
-| --- | --- | --- |
-| Black/white | 48,000 bytes | Row-major, MSB first; white=1, black=0 |
-| Black/white/red | 96,000 bytes | BW then red plane; white=(1,1), black=(0,1), red=(1,0) |
-| Black/white/red/yellow | 96,000 bytes | Four pixels per byte; black=0, white=1, red=3, yellow=2 |
+<details>
+<summary><strong>繁體中文 · Traditional Chinese</strong></summary>
 
-The exported C array uses the selected profile's encoding and labels it in the file header. It contains image data only, without the serial handshake or block delimiters. It is not a flashable program. The PNG export contains the preview palette; actual panel colors will differ.
+在 Android 手機上選擇相片，裁切或旋轉，預覽四色效果，再透過 USB OTG 將影像傳送到電子紙螢幕。相片在本機處理，應用程式會跟隨裝置的語言設定。參考裝置：[Good Display GDP075FU1（USB 版）](https://www.good-display.com/product/640.html)；影像傳輸仍須在實際裝置上驗證。
 
-## Separate ESP32 raw profile
+</details>
 
-The optional **Good Display ESP32 · USB web-tool firmware** profile follows [Good Display's USB web tool](https://www.e-paper-display.com/usb2epd.html), inspected on 2026-09-29. It targets compatible ESP32E6-E01-family firmware and requires confirming its dimensions and colors. CH340 alone does not identify a device's protocol.
+<details>
+<summary><strong>Português (Brasil)</strong></summary>
 
-This profile uses 115200 8N1 and raw image data in 512-byte writes, with no handshake or refresh acknowledgment. It is a different protocol from ImageToUSB v4.0.
+Selecione uma foto no celular Android, ajuste o corte ou a rotação, confira a prévia em quatro cores e envie para uma tela e-paper por USB OTG. As fotos são processadas localmente, e o app segue o idioma do dispositivo. Produto de referência: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); o envio de imagens ainda precisa ser validado no equipamento físico.
 
-| Raw web-tool / export-only mode | Encoding |
+</details>
+
+<details>
+<summary><strong>Português (Portugal)</strong></summary>
+
+Escolha uma fotografia no telemóvel Android, ajuste o recorte ou a rotação, veja a pré-visualização em quatro cores e envie-a para um ecrã de papel eletrónico por USB OTG. As fotografias são processadas localmente, e a aplicação segue o idioma do dispositivo. Equipamento de referência: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); a transferência de imagens ainda requer validação no equipamento físico.
+
+</details>
+
+<details>
+<summary><strong>Español</strong></summary>
+
+Selecciona una foto en tu móvil Android, recórtala o gírala, comprueba la vista previa en cuatro colores y envíala a una pantalla de papel electrónico mediante USB OTG. Las fotos se procesan localmente y la aplicación sigue el idioma del dispositivo. Equipo de referencia: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); el envío de imágenes aún requiere validación en el equipo físico.
+
+</details>
+
+<details>
+<summary><strong>Français</strong></summary>
+
+Choisissez une photo sur votre téléphone Android, recadrez-la ou faites-la pivoter, vérifiez l’aperçu en quatre couleurs, puis envoyez-la à un écran à papier électronique via USB OTG. Les photos sont traitées localement et l’application suit la langue de l’appareil. Matériel de référence : [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html) ; le transfert d’images reste à valider sur le matériel réel.
+
+</details>
+
+<details>
+<summary><strong>Italiano</strong></summary>
+
+Scegli una foto sul tuo telefono Android, ritagliala o ruotala, controlla l’anteprima a quattro colori e inviala a un display e-paper tramite USB OTG. Le foto vengono elaborate localmente e l’app segue la lingua del dispositivo. Dispositivo di riferimento: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); il trasferimento delle immagini deve ancora essere verificato sull’hardware reale.
+
+</details>
+
+<details>
+<summary><strong>Deutsch</strong></summary>
+
+Wähle auf deinem Android-Smartphone ein Foto aus, schneide es zu oder drehe es, prüfe die Vorschau in vier Farben und übertrage es per USB OTG auf ein E-Paper-Display. Fotos werden lokal verarbeitet; die App übernimmt die Gerätesprache. Referenzgerät: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html). Die Bildübertragung muss noch am physischen Gerät überprüft werden.
+
+</details>
+
+<details>
+<summary><strong>한국어 · Korean</strong></summary>
+
+Android 휴대전화에서 사진을 선택하고, 자르거나 회전한 뒤 네 가지 색상의 미리보기를 확인하여 USB OTG로 전자종이 화면에 전송할 수 있습니다. 사진은 기기에서 처리되며 앱은 기기의 언어 설정을 따릅니다. 참고 기기: [Good Display GDP075FU1 (USB 모델)](https://www.good-display.com/product/640.html). 실제 기기에서의 이미지 전송은 아직 검증이 필요합니다.
+
+</details>
+
+<details>
+<summary><strong>日本語 · Japanese</strong></summary>
+
+Android スマートフォンで写真を選び、切り抜きや回転を調整し、4色のプレビューを確認してから USB OTG 経由で電子ペーパーディスプレイに送信できます。写真は端末内で処理され、アプリは端末の言語設定に従います。参考機種：[Good Display GDP075FU1（USB モデル）](https://www.good-display.com/product/640.html)。実機での画像転送は、引き続き検証が必要です。
+
+</details>
+
+<details>
+<summary><strong>हिन्दी · Hindi</strong></summary>
+
+अपने Android फ़ोन पर फ़ोटो चुनें, उसे काटें या घुमाएँ, चार रंगों में प्रीव्यू देखें और USB OTG से ई-पेपर स्क्रीन पर भेजें। फ़ोटो फ़ोन पर ही प्रोसेस होती हैं और ऐप डिवाइस की भाषा सेटिंग अपनाता है। संदर्भ डिवाइस: [Good Display GDP075FU1 (USB मॉडल)](https://www.good-display.com/product/640.html)। असली डिवाइस पर फ़ोटो भेजने की प्रक्रिया का सत्यापन अभी बाकी है।
+
+</details>
+
+## Documentation and project status
+
+**Version 1.1.0:** 32 Android tests, 27 JavaScript tests, and 7 Python tests passed. Android Lint completed with 0 errors and 6 warnings. These results validate software behavior; physical display transfer remains pending. [Recorded validation results](docs/validation.md)
+
+| Explore | Contents |
 | --- | --- |
-| Black/white | Row-major, MSB first; white=1, black=0; row stride `ceil(width/8)`, zero padding |
-| Black/white/red | BW then red plane; white=(1,1), black=(0,1), red=(0,0) |
-| Four colors | High bits first; black=0, white=1, red=2, yellow=3; width divisible by 4 |
-| Six colors | One byte per pixel in clockwise-rotated traversal; black=0x00, white=0xff, red=0x4c, yellow=0xe2, green=0x96, blue=0x1d |
+| [Android guide](android/README.md) | Build, installation, USB connection and physical testing |
+| [Browser guide](docs/browser.md) | Desktop workflow, exports and supported profiles |
+| [Protocol notes](docs/imagetousb40-protocol.md) | ImageToUSB v4.0 framing, color encoding and source evidence |
+| [Translation catalogs](android/tools/locales/) | All 12 Android locale variants |
+| [Original dossier](android/evidence/) | Preserved engineering evidence |
 
-These formats are firmware-specific, not universal panel buffers. Seven-color panels are not supported.
-
-## Development and verification
-
-```sh
-npm test
-python3 -m venv .venv
-.venv/bin/python -m pip install -r tools/requirements.txt
-.venv/bin/python -m unittest discover -s tests -p 'test_*.py'
-```
-
-The JavaScript tests cover palette conversion and known byte patterns; v4.0 handshake fields, checksum validation and split replies; complete mono/tri/four transfers, delimiters and timing; timeout, cancellation, read/write failures and concurrent operations; and C exports. Serial tests use simulated ports, not hardware.
-
-Browser verification covers actual image import, GDP075FU1 defaults, profile switching, unsupported dimensions, C export matching all 96,000 transmitted payload bytes, progress, cancellation, a 10-second handshake timeout, reconnect, and mobile layout. Local screenshots and device diagnostics are excluded from Git.
-
-- `src/imagetousb40.js`: recovered v4.0 packing, handshake and reply parser.
-- `src/serial.js`: Web Serial configuration, connection lifecycle and transfer.
-- `src/conversion.js`: palette reduction, raw packing and C generation.
-- `src/app.js`: local image loading, transforms, preview and upload UI.
-- `server.mjs`: dependency-free local HTTP server with an explicit asset allowlist.
-
-## Historical Python diagnostics
-
-`tools/serial_upload.py` supports `raw` and the older `imagetoepd36` adapter only. **It does not implement ImageToUSB v4.0; use the browser for GDP075FU1.** The old v3.6 protocol has a different 22-byte handshake and different 800 × 480 mono polarity.
-
-```sh
-.venv/bin/python tools/serial_upload.py list
-```
-
-The 2026-09-29 local logs record an unsuccessful v3.6 attempt with no handshake reply and no image transferred. They are retained for context, not evidence about the new v4.0 implementation. See [the earlier investigation](docs/imagetoepd36-protocol.md). The CH340 was subsequently detected on a Pixel 10 through USB OTG and the Android app opened its serial port. Physical display transfer and refresh remain unverified; see [current validation status](docs/validation.md).
+Source, tests and build scripts are included. Local SDK paths, signing keys, build caches, APKs and device logs are excluded from Git.

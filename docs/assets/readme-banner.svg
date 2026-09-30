@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="360" viewBox="0 0 1120 360" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">E-paper USB</title>
+  <desc id="description">Your photos on digital paper. A phone connects through USB OTG to an illustrated four-color e-paper display.</desc>
+  <defs>
+    <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1" fill="#D7E4D9" opacity="0.15"/>
+    </pattern>
+    <clipPath id="screen"><rect x="812" y="99" width="250" height="150" rx="2"/></clipPath>
+    <clipPath id="phone"><rect x="633" y="105" width="98" height="139" rx="7"/></clipPath>
+  </defs>
+  <rect width="1120" height="360" rx="24" fill="#173E30"/>
+  <rect x="555" width="565" height="360" fill="url(#dots)"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="48" y="56" fill="#BDD8C5" font-size="13" font-weight="600" letter-spacing="3">PHOTO → DIGITAL PAPER</text>
+    <text x="45" y="123" fill="#FFFDF5" font-size="58" font-weight="700" letter-spacing="-2">E-paper USB</text>
+    <text x="48" y="170" fill="#E7EEDF" font-size="24">Your photos. On digital paper.</text>
+    <text x="48" y="210" fill="#BDD8C5" font-size="17">Android → USB OTG → e-paper</text>
+    <rect x="48" y="263" width="119" height="34" rx="17" fill="#2C5441"/>
+    <text x="107.5" y="285" text-anchor="middle" fill="#EDF2E7" font-size="13">800 × 480</text>
+    <rect x="177" y="263" width="107" height="34" rx="17" fill="#2C5441"/>
+    <text x="230.5" y="285" text-anchor="middle" fill="#EDF2E7" font-size="13">Four colors</text>
+    <rect x="294" y="263" width="144" height="34" rx="17" fill="#2C5441"/>
+    <text x="366" y="285" text-anchor="middle" fill="#EDF2E7" font-size="13">Processed locally</text>
+    <path d="M683 282V303C683 319 764 319 764 299V179H790" stroke="#BDD8C5" stroke-width="4" stroke-linecap="round"/>
+    <rect x="621" y="71" width="122" height="211" rx="22" fill="#EDEFE5"/>
+    <rect x="628" y="78" width="108" height="197" rx="16" fill="#20382D"/>
+    <rect x="668" y="86" width="28" height="5" rx="2.5" fill="#A7B8A4"/>
+    <g clip-path="url(#phone)">
+      <rect x="633" y="105" width="98" height="139" fill="#FFFDF5"/>
+      <circle cx="704" cy="139" r="15" fill="#E8CA48"/>
+      <path d="M621 229L666 159L709 224L736 174L743 254H621Z" fill="#D44F40"/>
+      <path d="M622 251L649 206L673 222L701 185L743 242V255Z" fill="#222C25"/>
+    </g>
+    <rect x="660" y="257" width="44" height="4" rx="2" fill="#A7B8A4"/>
+    <rect x="790" y="77" width="294" height="198" rx="15" fill="#EDEFE5"/>
+    <rect x="805" y="92" width="264" height="164" rx="6" fill="#C8CEC0"/>
+    <g clip-path="url(#screen)">
+      <rect x="812" y="99" width="250" height="150" fill="#FFFDF5"/>
+      <circle cx="1014" cy="133" r="22" fill="#E8CA48"/>
+      <path d="M795 242L880 127L957 237L1012 168L1083 252H795Z" fill="#D44F40"/>
+      <path d="M794 257L868 201L913 225L966 168L1078 247V261Z" fill="#222C25"/>
+      <path d="M861 153L880 127L899 156L881 149L872 158Z" fill="#FFFDF5"/>
+    </g>
+    <circle cx="907" cy="308" r="6" fill="#222C25" stroke="#8AA593"/>
+    <circle cx="927" cy="308" r="6" fill="#FFFDF5"/>
+    <circle cx="947" cy="308" r="6" fill="#E8CA48"/>
+    <circle cx="967" cy="308" r="6" fill="#D44F40"/>
+  </g>
+</svg>
