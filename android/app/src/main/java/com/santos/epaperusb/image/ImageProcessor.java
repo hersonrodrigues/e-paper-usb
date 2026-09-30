@@ -3,6 +3,10 @@ package com.santos.epaperusb.image;
 import android.content.ContentResolver;
 import android.graphics.*;
 import android.net.Uri;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextDirectionHeuristics;
+import android.text.TextPaint;
 import androidx.exifinterface.media.ExifInterface;
 import java.io.*;
 import java.util.concurrent.CancellationException;
@@ -112,7 +116,12 @@ public final class ImageProcessor {
         paint.setTextSize(size);
         float width = paint.measureText(text);
         if (width > maxWidth) paint.setTextSize(size * maxWidth / width);
-        canvas.drawText(text, x, y, paint);
+        // StaticLayout handles bidi order and shaping without mirroring the color bars.
+        TextPaint labelPaint = new TextPaint(paint);
+        StaticLayout label = StaticLayout.Builder.obtain(text, 0, text.length(), labelPaint, maxWidth)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false).setMaxLines(1)
+            .setTextDirection(TextDirectionHeuristics.FIRSTSTRONG_LTR).build();
+        canvas.save(); canvas.translate(x, y - label.getLineBaseline(0)); label.draw(canvas); canvas.restore();
     }
 
 }

@@ -14,7 +14,7 @@
 - **Preview four colors:** convert to black, white, yellow and red at **800 × 480**, with optional dithering. The preview and transmitted data use the same final image.
 - **Send by cable:** connect a CH340-based controller through USB OTG, grant USB access, and tap **Send**. Connecting alone never starts a transfer.
 - **Keep photos local:** Android processes images on the phone and has no internet permission. Diagnostic logs can be exported locally.
-- **Use your language:** the Android app follows device language settings, with **12 locale variants** and English fallback. Android 13+ also offers per-app language settings.
+- **Use your language:** the Android app follows device language settings, with **25 locale variants** and English fallback. Android 13+ also offers per-app language settings. Arabic, Persian and Urdu use right-to-left layouts.
 
 | Android app | Desktop browser app |
 | --- | --- |
@@ -146,16 +146,119 @@ Android スマートフォンで写真を選び、切り抜きや回転を調整
 
 </details>
 
+<details>
+<summary><strong>العربية · Arabic</strong></summary>
+
+<div dir="rtl">
+
+اختر صورة على هاتف Android، واقصصها أو دوّرها، ثم عاينها بأربعة ألوان وأرسلها إلى شاشة الورق الإلكتروني عبر USB OTG. تُعالج الصور على الهاتف، ويتبع التطبيق لغة الجهاز مع واجهة من اليمين إلى اليسار. الجهاز المرجعي: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html)؛ ما زال إرسال الصور يحتاج إلى التحقق على الجهاز الفعلي.
+
+</div>
+
+</details>
+
+<details>
+<summary><strong>বাংলা · Bengali</strong></summary>
+
+Android ফোনে ছবি বাছুন, কাটুন বা ঘোরান, চার রঙে প্রিভিউ দেখুন এবং USB OTG দিয়ে ই-পেপার স্ক্রিনে পাঠান। ছবি ফোনেই প্রক্রিয়াকরণ হয় এবং অ্যাপ ডিভাইসের ভাষা অনুসরণ করে। উদাহরণ ডিভাইস: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); আসল ডিভাইসে ছবি পাঠানো এখনও যাচাই করা বাকি।
+
+</details>
+
+<details>
+<summary><strong>Русский · Russian</strong></summary>
+
+Выберите фото на Android, обрежьте или поверните его, проверьте предпросмотр в четырёх цветах и отправьте на экран электронной бумаги через USB OTG. Фото обрабатываются на телефоне, приложение использует язык устройства. Пример оборудования: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); передача изображений ещё требует проверки на физическом устройстве.
+
+</details>
+
+<details>
+<summary><strong>Bahasa Indonesia · Indonesian</strong></summary>
+
+Pilih foto di ponsel Android, pangkas atau putar, periksa pratinjau empat warna, lalu kirim ke layar e-paper melalui USB OTG. Foto diproses di ponsel dan aplikasi mengikuti bahasa perangkat. Contoh perangkat: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); pengiriman gambar masih perlu divalidasi pada perangkat fisik.
+
+</details>
+
+<details>
+<summary><strong>Türkçe · Turkish</strong></summary>
+
+Android telefonunuzda bir fotoğraf seçin, kırpın veya döndürün, dört renkli önizlemeyi kontrol edin ve USB OTG ile e-kâğıt ekrana gönderin. Fotoğraflar telefonda işlenir ve uygulama cihazın dilini kullanır. Örnek cihaz: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); görüntü aktarımının fiziksel cihazda doğrulanması hâlâ gereklidir.
+
+</details>
+
+<details>
+<summary><strong>Tiếng Việt · Vietnamese</strong></summary>
+
+Chọn ảnh trên điện thoại Android, cắt hoặc xoay, kiểm tra bản xem trước bốn màu rồi gửi đến màn hình giấy điện tử qua USB OTG. Ảnh được xử lý trên điện thoại và ứng dụng dùng ngôn ngữ của thiết bị. Thiết bị tham khảo: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); việc truyền ảnh vẫn cần được kiểm chứng trên thiết bị thật.
+
+</details>
+
+<details>
+<summary><strong>ภาษาไทย · Thai</strong></summary>
+
+เลือกภาพบนโทรศัพท์ Android ตัดหรือหมุนภาพ ดูตัวอย่างสี่สี แล้วส่งไปยังจออีเปเปอร์ผ่าน USB OTG ภาพประมวลผลบนโทรศัพท์ และแอปใช้ภาษาตามการตั้งค่าของอุปกรณ์ อุปกรณ์ตัวอย่าง: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html) การส่งภาพยังต้องตรวจสอบกับอุปกรณ์จริง
+
+</details>
+
+<details>
+<summary><strong>اردو · Urdu</strong></summary>
+
+<div dir="rtl">
+
+Android فون پر تصویر منتخب کریں، اسے تراشیں یا گھمائیں، چار رنگوں میں پیش منظر دیکھیں اور USB OTG سے ای پیپر اسکرین پر بھیجیں۔ تصاویر فون پر ہی تیار ہوتی ہیں اور ایپ دائیں سے بائیں انٹرفیس کے ساتھ ڈیوائس کی زبان اپناتی ہے۔ مثال: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html)؛ اصل ڈیوائس پر تصاویر کی منتقلی کی تصدیق ابھی باقی ہے۔
+
+</div>
+
+</details>
+
+<details>
+<summary><strong>فارسی · Persian</strong></summary>
+
+<div dir="rtl">
+
+در گوشی Android عکس انتخاب کنید، آن را برش دهید یا بچرخانید، پیش‌نمایش چهاررنگ را ببینید و از طریق USB OTG به نمایشگر کاغذ الکترونیکی بفرستید. عکس‌ها روی گوشی پردازش می‌شوند و برنامه با رابط راست‌به‌چپ از زبان دستگاه پیروی می‌کند. دستگاه نمونه: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html)؛ انتقال تصویر هنوز به بررسی روی دستگاه واقعی نیاز دارد.
+
+</div>
+
+</details>
+
+<details>
+<summary><strong>Polski · Polish</strong></summary>
+
+Wybierz zdjęcie na telefonie z Androidem, przytnij je lub obróć, sprawdź podgląd w czterech kolorach i wyślij na ekran e-paper przez USB OTG. Zdjęcia są przetwarzane na telefonie, a aplikacja używa języka urządzenia. Przykładowy sprzęt: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); przesyłanie obrazów wymaga jeszcze weryfikacji na fizycznym urządzeniu.
+
+</details>
+
+<details>
+<summary><strong>Nederlands · Dutch</strong></summary>
+
+Kies een foto op je Android-telefoon, snijd deze bij of draai hem, controleer het voorbeeld in vier kleuren en stuur hem via USB OTG naar een e-paperscherm. Foto’s worden op de telefoon verwerkt en de app volgt de apparaattaal. Voorbeeldapparaat: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); beeldoverdracht moet nog op het fysieke apparaat worden gevalideerd.
+
+</details>
+
+<details>
+<summary><strong>Українська · Ukrainian</strong></summary>
+
+Виберіть фото на Android, обріжте або поверніть його, перевірте попередній перегляд у чотирьох кольорах і надішліть на екран електронного паперу через USB OTG. Фото обробляються на телефоні, застосунок використовує мову пристрою. Приклад обладнання: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html); передача зображень ще потребує перевірки на фізичному пристрої.
+
+</details>
+
+<details>
+<summary><strong>தமிழ் · Tamil</strong></summary>
+
+Android தொலைபேசியில் படத்தைத் தேர்ந்தெடுத்து, வெட்டி அல்லது சுழற்றி, நான்கு வண்ண முன்னோட்டத்தைப் பார்த்து USB OTG மூலம் மின்னணுக் காகிதத் திரைக்கு அனுப்பலாம். படங்கள் தொலைபேசியிலேயே செயலாக்கப்படும்; செயலி சாதனத்தின் மொழியைப் பின்பற்றும். எடுத்துக்காட்டு சாதனம்: [Good Display GDP075FU1 (USB)](https://www.good-display.com/product/640.html). உண்மையான சாதனத்தில் படப் பரிமாற்றம் இன்னும் சரிபார்க்கப்பட வேண்டும்.
+
+</details>
+
 ## Documentation and project status
 
-**Version 1.1.0:** 32 Android tests, 27 JavaScript tests, and 7 Python tests passed. Android Lint completed with 0 errors and 6 warnings. These results validate software behavior; physical display transfer remains pending. [Recorded validation results](docs/validation.md)
+**Version 1.2.0:** 33 Android tests passed, with 27 JavaScript and 7 Python tests passing in the previous validation of the unchanged browser and diagnostic code. Android Lint completed with 0 errors and 6 warnings. Physical display transfer remains pending. [Recorded validation results](docs/validation.md)
 
 | Explore | Contents |
 | --- | --- |
 | [Android guide](android/README.md) | Build, installation, USB connection and physical testing |
 | [Browser guide](docs/browser.md) | Desktop workflow, exports and supported profiles |
 | [Protocol notes](docs/imagetousb40-protocol.md) | ImageToUSB v4.0 framing, color encoding and source evidence |
-| [Translation catalogs](android/tools/locales/) | All 12 Android locale variants |
+| [Translation catalogs](android/tools/locales/) | All 25 Android locale variants |
 | [Original dossier](android/evidence/) | Preserved engineering evidence |
 
 Source, tests and build scripts are included. Local SDK paths, signing keys, build caches, APKs and device logs are excluded from Git.

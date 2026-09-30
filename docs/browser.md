@@ -33,6 +33,8 @@ Image processing happens locally. The server binds only to the loopback interfac
 
 ## GDP075FU1 data and protocol
 
+If the port connects and reports a completed send but the GDP075FU1 does not update, check **Upload software / firmware**. Select **GDP075FU1 · ImageToUSB v4.0**. The separate **Good Display ESP32 · USB web-tool firmware** profile sends a different raw format; its completed writes do not establish compatibility. After sending with the wrong profile, disconnect and power the display off and on before reconnecting with the correct profile. Keep the canvas at 800 × 480 and four colors.
+
 - [Collected specifications (JSON)](gdp075fu1-specs.json)
 - [Archived vendor manual](vendor/EN-GDP075FU1.pdf), V1.0, dated 2024-12-16
 - [Protocol, packet fields, encoding, and source evidence](imagetousb40-protocol.md)

@@ -4,15 +4,17 @@ Aplicativo Android multilíngue para preparar uma foto e enviá-la por USB OTG a
 
 **Entrega real:** projeto Android completo e APK de debug compilado no Mac. Testes offline e verificações da interface foram executados. O APK foi instalado e aberto no Pixel 10 conectado. **A transmissão ao painel físico ainda não foi validada.** Instalar o aplicativo no celular não confirma o ACK, a alimentação OTG nem as cores reais do painel.
 
-## Idiomas — versão 1.1.0
+## Idiomas — versão 1.2.0
 
 O idioma é escolhido automaticamente a partir da configuração do dispositivo. Inglês é o idioma de reserva. No Android 13 ou superior também é possível escolher um idioma em **Configurações → Aplicativos → E-paper USB → Idioma**; por padrão, o aplicativo segue o sistema.
 
-Idiomas: inglês, chinês simplificado e tradicional, português do Brasil e de Portugal, espanhol, francês, italiano, alemão, coreano, japonês e hindi. Textos da interface, mensagens de USB/erro, ajuda, descrições de acessibilidade e rótulos do teste de cores são localizados. Mensagens técnicas no arquivo de diagnóstico usam inglês estável para facilitar a comparação de logs; não incluem conteúdo da foto.
+São 25 variantes: inglês, chinês simplificado e tradicional, português do Brasil e de Portugal, espanhol, francês, italiano, alemão, coreano, japonês, hindi, árabe, bengali, russo, indonésio, turco, vietnamita, tailandês, urdu, persa, polonês, neerlandês, ucraniano e tâmil. Textos da interface, mensagens de USB/erro, ajuda, descrições de acessibilidade e rótulos do teste de cores são localizados. Mensagens técnicas no arquivo de diagnóstico usam inglês estável para facilitar a comparação de logs; não incluem conteúdo da foto.
+
+Árabe, persa e urdu usam interface da direita para a esquerda. A prévia e a ordem dos pixels permanecem iguais; apenas os controles e textos acompanham a direção do idioma. Os rótulos da imagem de teste usam composição de texto bidirecional. Traduções podem ser refinadas com revisão de falantes nativos.
 
 Os estados guardam IDs de recursos e são resolvidos no contexto atual da interface. Uma mudança de idioma preserva a prévia já preparada e os bytes correspondentes; o texto de uma imagem de teste já preparada não é alterado silenciosamente. Toque novamente em Teste de cores para gerar seus rótulos no novo idioma.
 
-Para atualizar as traduções, edite `tools/locales/<idioma>.txt`, execute `python3 tools/write_locales.py` e `python3 tools/check_locales.py`. Os XMLs gerados são incluídos no fonte. A lista de idiomas está em `app/src/main/res/xml/locales_config.xml`; mantenha também `resourceConfigurations` em `app/build.gradle` sincronizado para excluir idiomas presentes apenas nas dependências.
+Para atualizar as traduções, edite `tools/locales/<idioma>.txt`, execute `python3 tools/write_locales.py` e `python3 tools/check_locales.py`. Ao adicionar um idioma, registre-o em `FOLDERS` no gerador e em `resourceConfigurations` de `app/build.gradle`. O gerador produz os XMLs e `app/src/main/res/xml/locales_config.xml`; o verificador confere catálogos, recursos, argumentos de formatação e filtros do Gradle. Indonésio usa `id` no catálogo e em `localeConfig`, e o alias legado `in` nos recursos e filtros. Essa combinação funciona tanto na seleção automática quanto na lista de idiomas do Android.
 
 ## Correção 1.0.1
 

@@ -7,10 +7,10 @@ android {
         applicationId 'com.santos.epaperusb'
         minSdk 26
         targetSdk 36
-        versionCode 3
-        versionName '1.1.0'
+        versionCode 4
+        versionName '1.2.0'
         // Library-only translations must not outrank a language the app actually supports.
-        resourceConfigurations += ['en', 'pt', 'pt-rBR', 'es', 'fr', 'it', 'de', 'ko', 'ja', 'hi', 'b+zh+Hans', 'b+zh+Hant']
+        resourceConfigurations += ['en', 'pt', 'pt-rBR', 'es', 'fr', 'it', 'de', 'ko', 'ja', 'hi', 'b+zh+Hans', 'b+zh+Hant', 'ar', 'bn', 'ru', 'in', 'tr', 'vi', 'th', 'ur', 'fa', 'pl', 'nl', 'uk', 'ta']
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     buildFeatures { buildConfig true }

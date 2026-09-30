@@ -55,7 +55,7 @@ public final class MainActivity extends ComponentActivity {
             }
             return insets;
         });
-        TextView eyebrow = text(getString(R.string.eyebrow), 11, GREEN); eyebrow.setLetterSpacing(.17f); root.addView(eyebrow);
+        TextView eyebrow = text(getString(R.string.eyebrow), 11, GREEN); root.addView(eyebrow);
         TextView title = text(getString(R.string.app_name), 32, INK); title.setTypeface(null, Typeface.BOLD); root.addView(title);
         addText(root, getString(R.string.subtitle), 16, MUTED, 4);
         LinearLayout tags = new LinearLayout(this); tags.setGravity(Gravity.CENTER_VERTICAL); margin(root, tags, 14);
@@ -77,7 +77,7 @@ public final class MainActivity extends ComponentActivity {
             @Override protected void onMeasure(int width, int height) { super.onMeasure(width, MeasureSpec.makeMeasureSpec(Math.round(MeasureSpec.getSize(width) * .6f), MeasureSpec.EXACTLY)); }
         };
         frame.setBackground(shape(Color.WHITE, 0, 0xffdedfd6)); margin(photo, frame, 12);
-        preview = new ImageView(this); preview.setTag("preview"); preview.setContentDescription(getString(R.string.preview_description)); preview.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        preview = new ImageView(this); preview.setTag("preview"); preview.setLayoutDirection(View.LAYOUT_DIRECTION_LTR); preview.setContentDescription(getString(R.string.preview_description)); preview.setScaleType(ImageView.ScaleType.FIT_CENTER);
         frame.addView(preview, new FrameLayout.LayoutParams(-1, -1));
         placeholder = text(getString(R.string.preview_placeholder), 15, MUTED); placeholder.setGravity(Gravity.CENTER); frame.addView(placeholder, new FrameLayout.LayoutParams(-1, -1));
         photoStatus = text("", 12, MUTED); margin(photo, photoStatus, 9);
@@ -112,7 +112,8 @@ public final class MainActivity extends ComponentActivity {
         addText(usb, getString(R.string.profile_note), 12, MUTED, 10);
         export = button(getString(R.string.export_log), false); margin(root, export, 14);
         export.setOnClickListener(v -> logDocument.launch("epaper-diagnostic.txt"));
-        TextView help = text(getString(R.string.help_link, BuildConfig.VERSION_NAME), 14, GREEN); help.setPadding(0, dp(12), 0, dp(14)); help.setGravity(Gravity.CENTER); root.addView(help);
+        String version = android.text.BidiFormatter.getInstance(getResources().getConfiguration().getLocales().get(0)).unicodeWrap(BuildConfig.VERSION_NAME);
+        TextView help = text(getString(R.string.help_link, version), 14, GREEN); help.setPadding(0, dp(12), 0, dp(14)); help.setGravity(Gravity.CENTER); root.addView(help);
         help.setOnClickListener(v -> new AlertDialog.Builder(this).setTitle(getString(R.string.help_title))
             .setMessage(R.string.help_body)
             .setPositiveButton(getString(R.string.got_it), null).show());
@@ -163,7 +164,7 @@ public final class MainActivity extends ComponentActivity {
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
     private LinearLayout column() { LinearLayout layout = new LinearLayout(this); layout.setOrientation(LinearLayout.VERTICAL); return layout; }
     private LinearLayout row() { LinearLayout layout = new LinearLayout(this); layout.setGravity(Gravity.CENTER_VERTICAL); return layout; }
-    private TextView text(String value, int size, int color) { TextView view = new TextView(this); view.setText(value); view.setTextSize(size); view.setTextColor(color); return view; }
+    private TextView text(String value, int size, int color) { TextView view = new TextView(this); view.setTextDirection(View.TEXT_DIRECTION_LOCALE); view.setGravity(Gravity.START); view.setText(value); view.setTextSize(size); view.setTextColor(color); return view; }
     private void addText(LinearLayout parent, String value, int size, int color, int top) { margin(parent, text(value, size, color), top); }
     private void margin(LinearLayout parent, View child, int top) { LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2); p.topMargin = dp(top); parent.addView(child, p); }
     private void weighted(LinearLayout parent, View child) { LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, -2, 1); p.setMargins(dp(2), 0, dp(2), 0); parent.addView(child, p); }
