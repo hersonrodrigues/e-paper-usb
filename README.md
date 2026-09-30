@@ -271,6 +271,8 @@ Android தொலைபேசியில் படத்தைத் தேர�
 
 | Explore | Contents |
 | --- | --- |
+| [Project and agent reference](SKILLS.md) | Architecture, protocol invariants, development, diagnosis, localization and releases |
+| [Reusable skill entry point](skills/epaper-usb/SKILL.md) | Task-specific guidance for working in this checkout |
 | [Android guide](android/README.md) | Build, installation, USB connection and physical testing |
 | [Browser guide](docs/browser.md) | Desktop workflow, exports and supported profiles |
 | [Protocol notes](docs/imagetousb40-protocol.md) | ImageToUSB v4.0 framing, color encoding and source evidence |
