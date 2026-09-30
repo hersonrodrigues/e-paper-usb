@@ -1,5 +1,9 @@
 # E-paper USB para Android
 
+**[⬇ Baixar E-paper USB 1.2.0 — APK](https://github.com/hersonrodrigues/e-paper-usb/releases/download/v1.2.0/Epaper-USB-1.2.0-debug.apk)**
+
+Android 8.0 ou superior, com USB OTG. Abra o link no celular, baixe o APK e abra o arquivo para instalar. Se o Android solicitar, permita a instalação pelo navegador ou gerenciador de arquivos utilizado. Não é necessário compilar o projeto. Este é um **APK de debug para testes**; a transmissão e a atualização do painel físico ainda precisam de validação. [Notas da versão e downloads](https://github.com/hersonrodrigues/e-paper-usb/releases/tag/v1.2.0).
+
 Aplicativo Android multilíngue para preparar uma foto e enviá-la por USB OTG a um controlador compatível com o protocolo do ImageToUSB v4.0: Good Display, perfil 800 × 480, quatro cores, modelo de protocolo C4.
 
 **Entrega real:** projeto Android completo e APK de debug compilado no Mac. Testes offline e verificações da interface foram executados. O APK foi instalado e aberto no Pixel 10 conectado. **A transmissão ao painel físico ainda não foi validada.** Instalar o aplicativo no celular não confirma o ACK, a alimentação OTG nem as cores reais do painel.
@@ -24,7 +28,7 @@ O teste de regressão reproduziu o travamento da versão 1.0.0 usando `PendingIn
 
 ## Usar no celular
 
-1. Abra **E-paper USB**. O APK também está em `deliverables/Epaper-USB-debug.apk`.
+1. Instale o APK pelo link no início deste README e abra **E-paper USB**. Quem compila o projeto pode usar `app/build/outputs/apk/debug/app-debug.apk`.
 2. Desconecte o cabo que liga o celular ao Mac e conecte a tela ao celular usando um cabo/adaptador **USB OTG** apropriado. Confira alimentação e a etiqueta física do painel.
 3. Toque em **Conectar USB** e aceite a autorização do Android. O app só procura o conversor `1A86:7523`; esse identificador não prova qual painel está conectado. Deixe apenas um conversor compatível conectado.
 4. No primeiro teste, escolha **Teste de cores**. Confira a prévia e toque em **Enviar para a tela**. Nada é enviado automaticamente ao conectar.

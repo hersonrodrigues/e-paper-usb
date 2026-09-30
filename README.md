@@ -1,3 +1,17 @@
+## Download the Android app
+
+### [⬇ Download E-paper USB 1.2.0 — APK](https://github.com/hersonrodrigues/e-paper-usb/releases/download/v1.2.0/Epaper-USB-1.2.0-debug.apk)
+
+**Android 8.0+ · USB OTG · 25 language variants · Debug build for testing**
+
+Open this link on your Android phone, download the APK, and open the downloaded file to install it. If Android asks, allow installation from the browser or file manager you used. No Android Studio or computer is needed to install this download.
+
+[Release notes and downloads](https://github.com/hersonrodrigues/e-paper-usb/releases/tag/v1.2.0) · [Installation and USB guide](android/README.md#usar-no-celular) · [Build from source](#build-the-app)
+
+The APK passed the recorded offline tests; a complete transfer and physical display refresh still need hardware validation.
+
+---
+
 <p align="center">
   <img src="docs/assets/readme-banner.svg" alt="E-paper USB — an illustration of a phone sending a four-color image to an e-paper display" width="1120">
 </p>
@@ -33,7 +47,7 @@ The app's target profile is based on the **GDP075FU1 USB model** and the ImageTo
 
 ## Get started
 
-1. Build and install the Android app using the instructions below.
+1. [Download and install the Android APK](#download-the-android-app), or [build it from source](#build-the-app).
 2. Connect the display to your phone with a suitable **USB OTG adapter and data cable**.
 3. Open **E-paper USB**, tap **Connect USB**, and allow access when Android asks.
 4. Select a photo or **Color test**, adjust the preview, and tap **Send to display**. Keep the app open and the display connected.
@@ -261,4 +275,4 @@ Android தொலைபேசியில் படத்தைத் தேர�
 | [Translation catalogs](android/tools/locales/) | All 25 Android locale variants |
 | [Original dossier](android/evidence/) | Preserved engineering evidence |
 
-Source, tests and build scripts are included. Local SDK paths, signing keys, build caches, APKs and device logs are excluded from Git.
+Source, tests and build scripts are included. APK downloads are published in [GitHub Releases](https://github.com/hersonrodrigues/e-paper-usb/releases). Local SDK paths, signing keys, build caches, APK binaries and device logs are excluded from Git history.
