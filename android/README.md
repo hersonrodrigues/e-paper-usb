@@ -1,5 +1,7 @@
 # E-paper USB para Android
 
+**Autor: Herson Santos · [Licença MIT](../LICENSE)**
+
 **[⬇ Baixar E-paper USB 1.2.0 — APK](https://github.com/hersonrodrigues/e-paper-usb/releases/download/v1.2.0/Epaper-USB-1.2.0-debug.apk)**
 
 Android 8.0 ou superior, com USB OTG. Abra o link no celular, baixe o APK e abra o arquivo para instalar. Se o Android solicitar, permita a instalação pelo navegador ou gerenciador de arquivos utilizado. Não é necessário compilar o projeto. Este é um **APK de debug para testes**; a transmissão e a atualização do painel físico ainda precisam de validação. [Notas da versão e downloads](https://github.com/hersonrodrigues/e-paper-usb/releases/tag/v1.2.0).

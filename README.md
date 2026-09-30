@@ -18,6 +18,8 @@ The APK passed the recorded offline tests; a complete transfer and physical disp
 
 # E-paper USB
 
+**Author: Herson Santos · [MIT License](LICENSE)**
+
 **Turn a photo on your Android phone into an image for your e-paper display.** Choose a photo, adjust the preview, and send it directly over a USB OTG cable. Designed as an Android alternative to the Windows ImageToUSB workflow, with a separate local browser app for desktop use.
 
 **[Get started](#get-started)** · **[Example hardware](#example-hardware)** · **[Build the app](#build-the-app)** · **[Language summaries](#language-summaries)** · **[Test results](docs/validation.md)**
@@ -276,3 +278,11 @@ Android தொலைபேசியில் படத்தைத் தேர�
 | [Original dossier](android/evidence/) | Preserved engineering evidence |
 
 Source, tests and build scripts are included. APK downloads are published in [GitHub Releases](https://github.com/hersonrodrigues/e-paper-usb/releases). Local SDK paths, signing keys, build caches, APK binaries and device logs are excluded from Git history.
+
+## License
+
+The project's original code and documentation are available under the [MIT License](LICENSE), **Copyright (c) 2026 Herson Santos**. You may use, modify and distribute them freely, including commercially, provided you keep the copyright notice naming the author and the license text in copies or substantial portions of the software.
+
+Em português: você pode usar, modificar e distribuir livremente, inclusive comercialmente, desde que mantenha o aviso de autoria **Copyright (c) 2026 Herson Santos** e o texto da licença MIT.
+
+Third-party dependencies, vendor manuals and other third-party materials retain their respective copyrights and license terms. The project's MIT license does not relicense those materials. The USB library's notice is preserved in [android/evidence/usb-serial-for-android-LICENSE.txt](android/evidence/usb-serial-for-android-LICENSE.txt).

@@ -2,6 +2,8 @@
   "name": "epaper-studio",
   "version": "0.1.0",
   "private": true,
+  "author": "Herson Santos",
+  "license": "MIT",
   "type": "module",
   "description": "Local image conversion and Web Serial upload for e-paper displays",
   "scripts": { "start": "node server.mjs", "dev": "node server.mjs", "test": "node --test" },
