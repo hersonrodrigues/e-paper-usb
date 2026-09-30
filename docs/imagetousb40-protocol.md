@@ -52,7 +52,7 @@ Monochrome: `AA 55 E1 BB 80 02 C4 00 E1 FF 0D 0A`.
 
 The device reply is 10 bytes, starting `A0 50`, ending `FF`, with byte 8 equal to the sum of bytes 0–7 modulo 256. The active callback accepts command byte 2 equal to `F1`. Unlike the old v3.6 callback, it does not use byte 3 to select UC/SSD packing. The separate, unused `SerialDataAnalysis` method mentions `F2`; that is not the command that triggers image sending in the active receive callback.
 
-The browser tolerates noise and fragmented/coalesced replies, validates the full frame and checksum, and waits at most 10 seconds. No image payload is sent without a valid `F1` reply. Timeout, stopped transfers, and serial failures require resetting/reconnecting before retrying. A successful read releases its lock without cancelling the input stream, allowing another handshake on the same connection.
+The browser tolerates noise and fragmented/coalesced replies, validates the full frame and checksum, and waits at most 10 seconds. No image payload is sent without a valid `F1` reply. Timeout, stopped transfers, and serial failures require resetting/reconnecting before retrying. One persistent reader drains input throughout the connection, including while writing pixels and waiting for refresh. The ACK wait is armed before writing the header; replies consumed while idle do not authorize future uploads. Disconnect/failure cancels the reader and releases its lock before closing the port, following the [Web Serial stream lifecycle](https://developer.chrome.com/docs/capabilities/serial#close-port).
 
 ## Pixel encoding
 
@@ -81,6 +81,8 @@ For three/four colors: 23 full blocks, remainder 1,792 bytes; 96,060 total wire 
 
 The EXE has no final refresh acknowledgment. Completion in the UI means the serial writes completed. Keep the display powered and check its physical refresh; the PDF specifies about 20 seconds. The adapter does not send firmware, bootloader commands, or C source text. Exported C data contains the selected protocol's image payload only, not serial framing.
 
+After a successful write, the browser blocks another upload for 25 seconds (the documented estimate plus a margin). This guard is enforced by the transport as well as the button, and disconnecting does not clear the current page's waiting period. It does not establish that the device finished refreshing. ASCII diagnostics such as `The Endlen=...` remain log text, never ACKs or refresh confirmation.
+
 The vendor code contains other dimension mappings, but its long-image transfer branch explicitly checks for 800 × 480 and hardcodes 48,000/96,000-byte copies. This adapter therefore rejects other sizes and six-color mode rather than guessing their behavior.
 
 ## Verification
@@ -89,4 +91,4 @@ The vendor code contains other dimension mappings, but its long-image transfer b
 
 Browser verification uses an isolated headless Chrome and a simulated `navigator.serial` device. It checks image import, defaults, invalid size blocking, profile switching, C export matching the full 96,000-byte transmitted payload, progress, stop, timeout, reconnect, and narrow-screen layout. Screenshots are stored under `logs/web-v4-*.png`.
 
-On 2026-09-30 the OS port list contained no CH340 display. Hardware acceptance and physical refresh remain unverified. Historical `logs/imagetoepd36-*.json` and `logs/diagnostic-upload.json` describe the earlier, different protocol and must not be treated as v4.0 test results.
+In an earlier 2026-09-30 check, the OS port list contained no CH340 display. Later inspection of the user's active browser log showed a real F1 ACK at 12:36:08 and completion of host writes at 12:36:16. A second request at 12:36:17 timed out with ASCII diagnostics. This confirms one browser handshake, but not complete device-side receipt or physical refresh. The continuous-reader and resend-guard changes have been tested with simulated serial streams; they still need a fresh physical test. Historical `logs/imagetoepd36-*.json` and `logs/diagnostic-upload.json` describe the earlier, different protocol and must not be treated as v4.0 test results.

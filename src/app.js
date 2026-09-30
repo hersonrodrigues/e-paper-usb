@@ -1,24 +1,30 @@
 import { quantize, packPixels, toCArray, validateDimensions } from './conversion.js';
 import { SerialConnection } from './serial.js';
-import { packImageToUSB40 } from './imagetousb40.js';
+import { packImageToUSB40, hexBytes, serialText } from './imagetousb40.js';
 const $ = id => document.getElementById(id);
 const serial = new SerialConnection();
 let source, converted, original, viewOriginal = false, loading = false, active = false, aborter, lostPort;
-let loadId = 0, renderTimer;
+let loadId = 0, renderTimer, refreshTimer;
 const messages = [];
 function notice(text, error = false) { $('notice').textContent = text; $('notice').classList.toggle('error', error); }
 function log(text) {
   messages.push(`${new Date().toLocaleTimeString()}  ${text}`);
+  if (messages.length > 200) messages.shift();
   $('log').textContent = messages.slice(-50).join('\n'); $('log').scrollTop = $('log').scrollHeight;
+  $('export-log').disabled = false;
 }
 function supported() { return Boolean(navigator.serial && window.isSecureContext); }
 function refreshUI() {
   const connected = Boolean(serial.port);
+  const refreshSeconds = Math.ceil(serial.refreshRemainingMs / 1000);
   const protocol = $('protocol').value;
   const compatible = protocol === 'imagetousb40' || (protocol === 'good-display-usb' && $('compatible').checked);
   $('connect').disabled = connected || active || !supported() || protocol === 'unknown';
   $('disconnect').disabled = !connected || active;
-  $('send').disabled = !converted || !connected || !compatible || active || loading || serial.tainted;
+  $('send').disabled = !converted || !connected || !compatible || active || loading || serial.tainted || refreshSeconds > 0;
+  $('send').textContent = refreshSeconds > 0 ? `Wait ${refreshSeconds}s` : 'Send image ↗';
+  $('refresh-wait').hidden = !connected || refreshSeconds <= 0;
+  $('refresh-wait').textContent = `Giving the display time to refresh: ${refreshSeconds}s before another upload. Keep USB powered and check the screen. This wait does not confirm the refresh.`;
   $('cancel').hidden = !active || !aborter;
   $('cancel').disabled = Boolean(aborter?.signal.aborted);
   $('image-controls').disabled = active;
@@ -28,6 +34,17 @@ function refreshUI() {
   $('export-png').disabled = !converted || loading || active;
   $('connection-state').textContent = connected ? 'Port connected' : 'Not connected';
   $('connection-state').classList.toggle('connected', connected);
+}
+function watchRefresh() {
+  clearInterval(refreshTimer);
+  refreshUI();
+  refreshTimer = setInterval(() => {
+    refreshUI();
+    if (serial.refreshRemainingMs <= 0) {
+      clearInterval(refreshTimer);
+      log('Refresh waiting period ended. Check the physical display before sending again.');
+    }
+  }, 250);
 }
 function settings() {
   const width = Number($('width').value), height = Number($('height').value);
@@ -145,6 +162,9 @@ $('export-png').addEventListener('click', () => {
   canvas.getContext('2d').putImageData(new ImageData(converted.preview,converted.width,converted.height),0,0);
   canvas.toBlob(blob => { if (blob) download(blob,'epaper-preview.png'); },'image/png');
 });
+$('export-log').addEventListener('click', () => {
+  download(new Blob([messages.join('\n') + '\n'], { type: 'text/plain' }), 'epaper-connection-log.txt');
+});
 function updateProtocol() {
   const protocol = $('protocol').value;
   $('compatibility-row').hidden = protocol !== 'good-display-usb'; $('compatible').checked = false;
@@ -165,7 +185,17 @@ $('compatible').addEventListener('change',refreshUI);
 $('connect').addEventListener('click',async () => {
   active = true; refreshUI();
   try {
-    const info = await serial.connect({ protocol: $('protocol').value });
+    const info = await serial.connect({ protocol: $('protocol').value,
+      onReceive: bytes => {
+        const tail = bytes.subarray(Math.max(0, bytes.length - 128));
+        log(`Device RX (${bytes.length} bytes${bytes.length > 128 ? ', last 128 shown' : ''}): ${hexBytes(tail)} | Text: ${JSON.stringify(serialText(tail))}`);
+      },
+      onReadError: error => {
+        log(`Serial input failed: ${error.message}`);
+        if (!active) notice(`${error.message} Unplug the display from power, then reconnect.`, true);
+        refreshUI();
+      },
+    });
     log(`Serial port opened at 115200 baud (USB vendor ${info.usbVendorId?.toString(16) ?? 'unknown'}). No image sent.`);
     notice($('protocol').value === 'imagetousb40'
       ? 'Port connected. Check the preview and color setting, then send the image.'
@@ -192,9 +222,10 @@ $('send').addEventListener('click',async () => {
       $('progress').value = sent/total*100; notice(`Sending image… ${Math.round(sent/total*100)}%`);
     }});
     notice(converted.protocol === 'imagetousb40'
-      ? 'Image sent. GDP075FU1 refresh takes about 20 seconds. Keep USB connected and wait for the display to finish before sending again.'
+      ? 'Image data sent. Keep USB powered and check the physical display. The screen result is not confirmed.'
       : 'Image sent. Check the display and wait for its refresh to finish before sending again.');
     log('Transfer finished. Screen refresh is not verified.');
+    if (serial.refreshRemainingMs > 0) watchRefresh();
   } catch (error) {
     const text = error.name === 'AbortError' ? 'Transfer stopped.' : `Transfer failed: ${error.message}`;
     notice(`${text} Reset the board and reconnect before retrying.`,true); log(text);

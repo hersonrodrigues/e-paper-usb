@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SerialConnection } from '../src/serial.js';
+import { SerialConnection, DISPLAY_SETTLE_MS } from '../src/serial.js';
 import { packImageToUSB40, imageToUSB40Handshake, validImageToUSB40Reply } from '../src/imagetousb40.js';
 import { toCArray } from '../src/conversion.js';
 
@@ -24,8 +24,9 @@ function device(onWrite = (bytes, controller) => { if (bytes.length === 12) cont
     async close() { assert.equal(readable.locked, false); assert.equal(writable.locked, false); this.closed = true; },
     getInfo() { return { usbVendorId: 0x1a86, usbProductId: 0x7523 }; },
   };
-  const connection = new SerialConnection({ requestPort: async () => port });
-  return { connection, port, writes, times, controller, get cancelled() { return cancelled; } };
+  let clock = 0;
+  const connection = new SerialConnection({ requestPort: async () => port }, { now: () => clock });
+  return { connection, port, writes, times, controller, advance(ms) { clock += ms; }, get cancelled() { return cancelled; } };
 }
 
 test('v4 800x480 monochrome is white=1, black=0, left-to-right, top-to-bottom', () => {
@@ -95,12 +96,103 @@ test('v4 transfer waits for valid fragmented ACK then sends exact payload, delim
   for (let i = 3; i < m.times.length; i += 2) assert.ok(m.times[i] - m.times[i - 1] >= 90, '100 ms vendor pacing');
   assert.equal(progress.at(-1), 48000);
   assert.deepEqual(result, { bytesSent: 48000, handshakeAccepted: true, refreshConfirmed: false });
-  assert.equal(m.cancelled, false); assert.equal(m.port.readable.locked, false); assert.equal(m.port.writable.locked, false);
-  // The successful read must leave the stream usable for another upload.
+  assert.equal(m.cancelled, false); assert.equal(m.port.readable.locked, true); assert.equal(m.port.writable.locked, false);
+  // The input reader continues through refresh; another send must wait.
+  m.advance(DISPLAY_SETTLE_MS);
   const abort = new AbortController();
   await assert.rejects(m.connection.send(input, { ...dimensions, signal: abort.signal, onStatus: s => { if (s.phase === 'accepted') abort.abort(); } }), { name: 'AbortError' });
   assert.equal(m.writes.length, 26); // first transfer's 25 writes, then only a second handshake
   await m.connection.disconnect();
+  assert.equal(m.port.readable.locked, false);
+});
+
+test('the observed ASCII firmware output is diagnostic text, never a handshake or refresh ACK', async () => {
+  const text = '7926fe:15\r\n81471fe:16\r\n82697fe:17\r\n82697The Endlen=8269710fe:0\r\n';
+  const reply = new TextEncoder().encode(text);
+  const m = device((bytes, c) => { c.enqueue(reply.slice(0, 17)); c.enqueue(reply.slice(17)); });
+  await m.connection.connect({ protocol: 'imagetousb40' });
+  await assert.rejects(m.connection.send(new Uint8Array(48000), { ...dimensions, handshakeTimeoutMs: 20 }), error => {
+    assert.match(error.message, /Received 64 serial bytes/);
+    assert.match(error.message, /The Endlen=82697/);
+    assert.match(error.message, /No image pixels were sent/);
+    return true;
+  });
+  assert.equal(m.writes.length, 1);
+  assert.equal(m.connection.tainted, true);
+  await m.connection.disconnect();
+});
+
+test('device output is drained during pixels and after transfer; an immediate resend writes nothing', async () => {
+  const received = [];
+  const m = device((bytes, c) => {
+    if (bytes.length === 12) c.enqueue(ACK);
+    else c.enqueue(new TextEncoder().encode('fe:15\r\n'));
+  });
+  await m.connection.connect({ protocol: 'imagetousb40', onReceive: bytes => received.push(bytes.slice()) });
+  await m.connection.send(new Uint8Array(48000), dimensions);
+  assert.equal(received.length, m.writes.length);
+  assert.equal(m.connection.refreshRemainingMs, 25000);
+  const count = m.writes.length;
+  await assert.rejects(m.connection.send(new Uint8Array(48000), dimensions), /Wait 25 seconds/);
+  assert.equal(m.writes.length, count);
+  assert.equal(m.connection.tainted, false);
+  m.controller.enqueue(new TextEncoder().encode('The Endlen=48000'));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(new TextDecoder().decode(received.at(-1)), 'The Endlen=48000');
+  // ASCII "The End" must not shorten the pause or establish physical refresh.
+  assert.equal(m.connection.refreshRemainingMs, 25000);
+  m.advance(DISPLAY_SETTLE_MS);
+  const abort = new AbortController();
+  await assert.rejects(m.connection.send(new Uint8Array(48000), { ...dimensions, signal: abort.signal,
+    onStatus: s => { if (s.phase === 'accepted') abort.abort(); },
+  }), { name: 'AbortError' });
+  assert.equal(m.writes.length, count + 1);
+  await m.connection.disconnect();
+});
+
+test('an ACK received while idle cannot authorize a later image', async () => {
+  const m = device(() => {});
+  await m.connection.connect({ protocol: 'imagetousb40' });
+  m.controller.enqueue(ACK);
+  await new Promise(resolve => setImmediate(resolve));
+  await assert.rejects(m.connection.send(new Uint8Array(48000), { ...dimensions, handshakeTimeoutMs: 20 }), /No serial response received/);
+  assert.equal(m.writes.length, 1);
+  await m.connection.disconnect();
+});
+
+test('read failure after acceptance stops subsequent pixels and releases both locks', async () => {
+  const m = device((bytes, c) => {
+    if (bytes.length === 12) c.enqueue(ACK);
+    else c.error(new Error('Device input failed during pixels'));
+  });
+  await m.connection.connect({ protocol: 'imagetousb40' });
+  await assert.rejects(m.connection.send(new Uint8Array(48000), dimensions), /input failed during pixels/);
+  assert.equal(m.writes.filter(b => b.length > 12).length, 1);
+  assert.equal(m.connection.tainted, true);
+  assert.equal(m.port.readable.locked, false);
+  assert.equal(m.port.writable.locked, false);
+  await m.connection.disconnect();
+});
+
+test('a failed handshake write clears its pending ACK wait and closes the reader', async () => {
+  const m = device(() => { throw new Error('Header write failed'); });
+  await m.connection.connect({ protocol: 'imagetousb40' });
+  await assert.rejects(m.connection.send(new Uint8Array(48000), dimensions), /Header write failed/);
+  assert.equal(m.connection.input.pending, null);
+  assert.equal(m.port.readable.locked, false);
+  assert.equal(m.port.writable.locked, false);
+  await m.connection.disconnect();
+});
+
+test('disconnect during refresh cancels the persistent read but does not erase the waiting period', async () => {
+  const m = device();
+  await m.connection.connect({ protocol: 'imagetousb40' });
+  await m.connection.send(new Uint8Array(48000), dimensions);
+  await m.connection.disconnect();
+  assert.equal(m.cancelled, true);
+  assert.equal(m.port.readable.locked, false);
+  assert.equal(m.connection.refreshRemainingMs, DISPLAY_SETTLE_MS);
+  assert.equal(m.connection.input, null);
 });
 
 for (const mode of ['tri', 'four']) test(`v4 ${mode} sends all 96,000 bytes with no extra header between planes`, async () => {

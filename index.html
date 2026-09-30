@@ -32,8 +32,9 @@
 <label class="check" id="compatibility-row" hidden><input type="checkbox" id="compatible"><span>My board runs firmware compatible with Good Display’s USB web tool, with this resolution and color mode.</span></label>
 <div class="connection-actions"><button id="connect">Choose serial port</button><button id="disconnect" disabled>Disconnect</button><button class="primary" id="send" disabled>Send image <span>↗</span></button><button id="cancel" hidden>Stop transfer</button></div>
 <progress id="progress" value="0" max="100" aria-label="Upload progress"></progress>
+<p id="refresh-wait" class="hint" hidden></p>
 <p id="notice" role="status" aria-live="polite">Ready for GDP075FU1: choose an image to preview in 800 × 480, four colors.</p>
-<details><summary>Connection activity</summary><pre id="log" aria-label="Connection activity log">No serial activity yet.</pre></details>
+<details><summary>Connection activity</summary><pre id="log" aria-label="Connection activity log">No serial activity yet.</pre><button id="export-log" disabled>Save diagnostic log</button></details>
 </section>
 </div></div>
 <footer><span>Built for the quiet magic of e-paper.</span><a href="https://www.good-display.com/public/html/pdfjs/viewer/viewernew.html?file=https://v4.cecdn.yun300.cn/100001_1909185148/EN-GDP075FU1.pdf" target="_blank" rel="noreferrer">GDP075FU1 manual ↗</a></footer>

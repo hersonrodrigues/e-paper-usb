@@ -10,7 +10,7 @@ Android version **1.2.0**, version code **4**. The source includes the Android U
 | Android `lintDebug` | 0 errors, 6 warnings |
 | Android `assembleDebug` | Debug APK built successfully on macOS |
 | Translation catalog validation | 25 locale variants, 77 strings each; complete keys, matching format arguments and consistent Android/Gradle registration |
-| JavaScript `npm test` | 27 passed in the previous validation; browser code unchanged |
+| JavaScript `npm test` | 33 passed, including continuous RX, ASCII diagnostics, stale ACK rejection, refresh waiting period and stream cleanup |
 | Python unittest discovery | 7 passed in the previous validation; diagnostic code unchanged |
 
 The Android suite covers the recovered protocol vectors, palette packing, checksums, fragmented/concatenated ACKs, invalid replies, timeouts, disconnects, cancellation, concurrent operations, USB permission callbacks, reconnects, incomplete-session recovery, image fitting, EXIF orientation, transparency and preview/payload consistency. Transports in these tests are simulated.
@@ -33,11 +33,22 @@ The AGP 8.10 `UnusedTranslation` warning for Indonesian is suppressed: Android r
 
 The CH340 converter (`1A86:7523`) was detected on the Pixel through USB OTG, and version 1.0.1 reached the app's USB-ready state after the permission callback fix. This confirms detection and serial-port opening in that session.
 
-**No real ImageToUSB v4.0 ACK, complete v4.0 image transmission, or physical e-paper refresh has been validated with this implementation.** Color codes, orientation, power stability and refresh timing still require the physical test in the [Android README](../android/README.md#roteiro-do-primeiro-teste-físico). The localized build has not sent pixels automatically.
+**The Android implementation has not yet validated a real ImageToUSB v4.0 ACK, a complete image transmission or a physical e-paper refresh.** The browser later recorded one real F1 ACK, as detailed below; device-side receipt of a complete image and physical refresh remain unverified. Color codes, orientation, power stability and refresh timing still require the physical test in the [Android README](../android/README.md#roteiro-do-primeiro-teste-físico). The localized build has not sent pixels automatically.
 
 ## Browser diagnosis
 
 The local web app loaded and produced the expected 800 × 480, 96000-byte preview. Inspection of the active browser session found two writes using the separate ESP32 raw profile. This is not the GDP075FU1 v4.0 protocol. The session was disconnected and switched to **GDP075FU1 · ImageToUSB v4.0**, preserving the selected image. No new transfer was started during diagnosis. Power-cycle the display before reconnecting and testing the correct profile.
+
+A later user-triggered browser transfer recorded:
+
+- 12:36:08: header `AA 55 E1 BB 80 04 C4 01 E4 FF 0D 0A`; valid reply `A0 50 F1 00 00 00 00 00 E1 FF`.
+- 12:36:16: host reported transfer finished; physical refresh not verified.
+- 12:36:17: another handshake started, one second after the previous writes completed.
+- 12:36:27: handshake timeout; the received tail decodes to `7926fe:15\r\n81471fe:16\r\n82697fe:17\r\n82697The Endlen=8269710fe:0\r\n`.
+
+This establishes a successful initial handshake and an immediate repeat request during the documented refresh window. It suggests the display was still busy; the text alone cannot prove that diagnosis, establish the meaning of the reported length or confirm that the first image arrived intact.
+
+The browser now drains RX throughout the connection and enforces a 25-second waiting period after successful writes. It logs readable device text alongside hex and can export the recent diagnostic log locally. All 33 JavaScript tests pass. In a separate browser test with simulated serial input, the UI sent exactly 96000 image bytes in 24 blocks, kept reading a delayed ASCII message after the last block, disabled Send with a countdown, enabled it again after the wait and released both stream locks on disconnect. The downloaded diagnostic text contained the header, ACK, post-transfer RX and wait completion. This is simulated evidence, not a new physical-device test.
 
 ## Repeat the checks
 

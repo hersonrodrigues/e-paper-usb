@@ -70,7 +70,7 @@ To run the separate **desktop browser app**:
 npm start
 ```
 
-Open **http://localhost:5173** in desktop Chrome or Edge. No npm dependencies are required. See the [browser guide](docs/browser.md) for profiles, exports and serial upload.
+Open **http://localhost:5173** in desktop Chrome or Edge. The browser implements the serial protocol directly in plain JavaScript; no npm dependencies, Python packages or external serial libraries are required. It keeps reading device replies and waits 25 seconds between completed uploads. See the [browser guide](docs/browser.md) for profiles, exports, serial upload and local diagnostic logs.
 
 ## Language summaries
 
@@ -265,7 +265,7 @@ Android தொலைபேசியில் படத்தைத் தேர�
 
 ## Documentation and project status
 
-**Version 1.2.0:** 33 Android tests passed, with 27 JavaScript and 7 Python tests passing in the previous validation of the unchanged browser and diagnostic code. Android Lint completed with 0 errors and 6 warnings. Physical display transfer remains pending. [Recorded validation results](docs/validation.md)
+**Android version 1.2.0:** 33 Android tests passed. The updated browser passes 33 JavaScript tests; 7 Python tests passed in the previous validation of the unchanged diagnostic code. Android Lint completed with 0 errors and 6 warnings. A browser handshake has been observed, but complete device-side image receipt and physical refresh remain unverified. [Recorded validation results](docs/validation.md)
 
 | Explore | Contents |
 | --- | --- |

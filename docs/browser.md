@@ -6,6 +6,8 @@ Run the commands below from the repository root.
 
 A local web app for fitting an image to an e-paper display, previewing its palette, exporting C image data, and sending pixels directly over USB serial.
 
+**The web app implements the device protocol itself in plain JavaScript.** It has no npm dependencies, Python packages, external serial libraries, cloud service or Windows executable. Node's standard library only serves the local files; the browser's built-in Web Serial API opens the operating system's serial port. Browser USB permission and OS support for the CH340 are still required. The optional historical Python tools later in this guide are separate and are not used by the web app.
+
 The default is **GDP075FU1 / ImageToUSB v4.0: 800 × 480, black/white/red/yellow**. This matches the manufacturer's manual supplied by the user. The browser adapter was recovered from the user's `ImageToUSB v4.0.exe`; it implements the 12-byte handshake, four-color encoding, and paced image transfer. Automated tests and a simulated device validate the host implementation; a physical display refresh remains unverified.
 
 ## Run and send an image
@@ -23,7 +25,7 @@ Open **http://localhost:5173** in desktop Chrome or Edge. No npm dependencies ar
 3. Adjust fit, rotation, contrast, and dithering. Check the preview.
 4. Leave **GDP075FU1 · ImageToUSB v4.0** selected under upload software.
 5. Click **Choose serial port**, select the device's COM/USB serial port, then **Send image**.
-6. The app waits for a valid handshake before sending any image bytes. After transfer, keep USB connected and allow approximately **20 seconds** for the physical display to refresh.
+6. The app waits for a valid handshake before sending any image bytes. After transfer, **Send is disabled for 25 seconds**, giving a margin over the manual's approximately 20-second refresh. Keep USB connected and check the physical screen before sending again. The countdown is a host-side waiting period, not a refresh acknowledgment.
 
 Successful serial writes do not prove the screen refreshed: this protocol has no final refresh acknowledgment. If a transfer is stopped, fails, or times out, reset/reconnect the display before retrying. Stop cancels a handshake wait or pauses between image writes. If an OS serial write stalls, unplug/reset the board to release it.
 
@@ -34,6 +36,10 @@ Image processing happens locally. The server binds only to the loopback interfac
 ## GDP075FU1 data and protocol
 
 If the port connects and reports a completed send but the GDP075FU1 does not update, check **Upload software / firmware**. Select **GDP075FU1 · ImageToUSB v4.0**. The separate **Good Display ESP32 · USB web-tool firmware** profile sends a different raw format; its completed writes do not establish compatibility. After sending with the wrong profile, disconnect and power the display off and on before reconnecting with the correct profile. Keep the canvas at 800 × 480 and four colors.
+
+If a second upload times out immediately after the first, the display may still be refreshing. A real browser log showed a valid `A0 50 F1 … E1 FF` handshake followed by a completed write, then a second request only one second later. Its timeout contained ASCII text including `The Endlen=82697`, rather than a new valid handshake. That text is diagnostic output; it does not prove a complete 96000-byte image or a successful refresh. The browser now reads serial input continuously during the transfer, after it and while idle, and prevents an immediate resend. A reply received while idle cannot authorize a later upload.
+
+Open **Connection activity → Save diagnostic log** to save the recent header TX, device RX (hex and readable text), handshake result, timing and errors locally. The bounded log contains no image pixel data and is not uploaded. If a handshake still times out after power-cycling, save this log so the exact fresh response can be checked. Do not switch protocols or bypass the ACK based on text output.
 
 - [Collected specifications (JSON)](gdp075fu1-specs.json)
 - [Archived vendor manual](vendor/EN-GDP075FU1.pdf), V1.0, dated 2024-12-16
@@ -70,12 +76,17 @@ These formats are firmware-specific, not universal panel buffers. Seven-color pa
 
 ```sh
 npm test
+```
+
+The web app and its tests need only Node.js. To test the separate historical Python tools, optionally run:
+
+```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install -r tools/requirements.txt
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'
 ```
 
-The JavaScript tests cover palette conversion and known byte patterns; v4.0 handshake fields, checksum validation and split replies; complete mono/tri/four transfers, delimiters and timing; timeout, cancellation, read/write failures and concurrent operations; and C exports. Serial tests use simulated ports, not hardware.
+The JavaScript tests cover palette conversion and known byte patterns; v4.0 handshake fields, checksum validation and split replies; complete mono/tri/four transfers, delimiters and timing; continuous input during/after writes, the 25-second resend guard, stale ACK rejection and the observed ASCII timeout; cancellation, read/write failures, cleanup and concurrent operations; and C exports. Serial tests use simulated ports, not hardware.
 
 Browser verification covers actual image import, GDP075FU1 defaults, profile switching, unsupported dimensions, C export matching all 96,000 transmitted payload bytes, progress, cancellation, a 10-second handshake timeout, reconnect, and mobile layout. Local screenshots and device diagnostics are excluded from Git.
 

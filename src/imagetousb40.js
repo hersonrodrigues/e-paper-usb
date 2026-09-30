@@ -49,44 +49,79 @@ export function validImageToUSB40Reply(frame) {
 }
 
 export const hexBytes = bytes => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join(' ');
+export const serialText = bytes => Array.from(bytes, b => b === 10 ? '\n' : b === 13 ? '\r' : b >= 32 && b <= 126 ? String.fromCharCode(b) : '.').join('');
 
-export async function awaitImageToUSB40Reply(port, { signal, timeoutMs = 10000 } = {}) {
-  signal?.throwIfAborted();
-  if (!port.readable) throw new Error('Serial input is unavailable. Reconnect the display.');
-  const reader = port.readable.getReader();
-  let buffer = [], received = [], failure;
-  const cancel = error => {
-    failure ??= error;
-    // Cancelling releases a pending read; this connection must be reopened after failure.
-    reader.cancel().catch(() => {});
-  };
-  const onAbort = () => cancel(signal.reason ?? new DOMException('Transfer stopped.', 'AbortError'));
-  const timer = setTimeout(() => cancel(new Error(
-    `No valid ImageToUSB v4.0 handshake reply within ${timeoutMs / 1000}s. Received: ${hexBytes(received) || 'nothing'}. Check the USB port and display power.`
-  )), timeoutMs);
-  signal?.addEventListener('abort', onAbort, { once: true });
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (failure) throw failure;
-      if (done) throw new Error('Serial input closed before the ImageToUSB handshake completed.');
-      for (const byte of value) {
-        received.push(byte);
-        if (received.length > 64) received.shift();
-        buffer.push(byte);
-        if (buffer.length < 10) continue;
-        const frame = Uint8Array.from(buffer);
-        if (validImageToUSB40Reply(frame)) {
-          buffer = [];
-          // The EXE's active receive callback accepts F1. It does not interpret byte 3 as an IC family.
-          if (frame[2] === 0xf1) return frame;
-        } else buffer.shift();
+// A single reader owns the input stream for the whole connection, including image
+// writes and refresh. Firmware debug output must not collect until the next ACK wait.
+export class ImageToUSB40Input {
+  constructor(port, { onReceive = () => {}, onError = () => {} } = {}) {
+    if (!port.readable) throw new Error('Serial input is unavailable. Reconnect the display.');
+    this.reader = port.readable.getReader();
+    this.pending = null; this.failure = null; this.stopping = false;
+    this.onReceive = onReceive; this.onError = onError;
+    this.task = this.read();
+  }
+  throwIfFailed() { if (this.failure) throw this.failure; }
+  async read() {
+    try {
+      while (!this.stopping) {
+        const { value, done } = await this.reader.read();
+        if (this.stopping) break;
+        if (done) throw new Error('Serial input closed. Reset the display and reconnect.');
+        this.pending?.feed(value);
+        this.onReceive(value);
       }
-    }
-  } finally {
-    clearTimeout(timer);
-    signal?.removeEventListener('abort', onAbort);
-    reader.releaseLock();
+    } catch (error) {
+      if (!this.stopping) {
+        this.failure = error;
+        this.pending?.finish(error);
+        this.onError(error);
+      }
+    } finally { this.reader.releaseLock(); }
+  }
+  waitForReply({ signal, timeoutMs = 10000 } = {}) {
+    signal?.throwIfAborted();
+    this.throwIfFailed();
+    if (this.stopping || this.pending) throw new Error('Serial input cannot start another handshake.');
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new Error('Invalid handshake timeout.');
+    return new Promise((resolve, reject) => {
+      let buffer = [], received = [], receivedCount = 0;
+      const finish = (error, frame) => {
+        clearTimeout(timer);
+        signal?.removeEventListener('abort', onAbort);
+        this.pending = null;
+        if (error) reject(error); else resolve(frame);
+      };
+      const onAbort = () => finish(signal.reason ?? new DOMException('Transfer stopped.', 'AbortError'));
+      const timer = setTimeout(() => {
+        const detail = receivedCount
+          ? `Received ${receivedCount} serial bytes, but no valid F1 acknowledgment. RX tail: ${hexBytes(received)}. Text: ${JSON.stringify(serialText(received))}. The display may still be busy or use different firmware.`
+          : 'No serial response received. Check the selected port, cable and display power.';
+        finish(new Error(`No valid ImageToUSB v4.0 handshake reply within ${timeoutMs / 1000}s. ${detail} No image pixels were sent.`));
+      }, timeoutMs);
+      this.pending = { finish, feed: bytes => {
+        for (const byte of bytes) {
+          receivedCount++;
+          received.push(byte);
+          if (received.length > 128) received.shift();
+          buffer.push(byte);
+          if (buffer.length < 10) continue;
+          const frame = Uint8Array.from(buffer);
+          if (validImageToUSB40Reply(frame)) {
+            buffer = [];
+            // Only F1 starts pixels in the EXE's active receive callback.
+            if (frame[2] === 0xf1) { finish(null, frame); return; }
+          } else buffer.shift();
+        }
+      } };
+      signal?.addEventListener('abort', onAbort, { once: true });
+    });
+  }
+  async close() {
+    this.stopping = true;
+    this.pending?.finish(new Error('Serial session closed.'));
+    try { await this.reader.cancel(); } catch {}
+    await this.task;
   }
 }
 
