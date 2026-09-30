@@ -1,0 +1,358 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dossiê e-paper USB — continuar no Mac</title><style>body{max-width:1000px;margin:40px auto;padding:0 24px;font:16px/1.6 system-ui;color:#172b3a;background:#f6f8fa}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:white;padding:24px;border:1px solid #d9e0e5;border-radius:12px;font:14px/1.6 ui-monospace,monospace}h1{font-size:30px}h2{margin-top:40px}</style><h1>Dossiê e-paper USB</h1><p>Protocolo reconstruído, código e roteiro para desenvolver o APK no Mac. Ainda sem validação no hardware.</p><h2>COMECE-AQUI-MAC.txt</h2><pre>CONTINUAR NO MAC: ANDROID -&gt; USB OTG -&gt; TELA E-PAPER
+
+OBJETIVO
+Criar um aplicativo Android para selecionar uma foto e envi&#225;-la diretamente
+&#224; tela e-paper pelo cabo, substituindo o ImageToUSB do Windows.
+O Mac ser&#225; usado para desenvolver e compilar o APK; o aplicativo rodar&#225;
+no celular Android. O driver SETUP.EXE n&#227;o deve ser instalado no Mac.
+
+ESTADO REAL DA ENTREGA
+Este pacote &#233; um dossi&#234; de engenharia e uma base de protocolo Java.
+Ainda N&#195;O &#233; um projeto Android completo, nem um APK. Faltam interface,
+integra&#231;&#227;o USB, processamento da imagem, tratamento de conex&#227;o e build.
+A an&#225;lise foi est&#225;tica, com leitura do registro do Windows e do log da
+janela do ImageToUSB. N&#227;o houve captura USB nem teste da reprodu&#231;&#227;o.
+A execu&#231;&#227;o de javac no Windows retornou Access is denied; nenhum teste
+Java foi executado. N&#227;o interpretar os testes inclu&#237;dos como aprova&#231;&#227;o.
+
+ARQUIVOS
+Protocolo-USB.txt: descobertas, comandos, limites e hashes dos execut&#225;veis.
+EpaperProtocol.java: empacotamento, cabe&#231;alho, ACK e divis&#227;o em blocos.
+TestEpaperProtocol.java: teste offline, sem abrir a porta USB.
+ImageToUSB.il.txt: instru&#231;&#245;es IL extra&#237;das para conferir a an&#225;lise.
+Dossie-Mac.html: leitura em um &#250;nico arquivo no navegador, com c&#243;digo.
+
+COMO CONTINUAR
+1. Transfira o ZIP para o Mac e extraia-o. Os caminhos C:/ da conversa
+   pertencem ao Windows e n&#227;o funcionar&#227;o diretamente no Mac.
+2. Instale/abra Android Studio para Mac e deixe o assistente configurar
+   o SDK. Use o JDK incorporado e vers&#245;es de Gradle/AGP compat&#237;veis com
+   o projeto criado pelo Android Studio.
+3. Entregue esta pasta a um assistente de programa&#231;&#227;o, ou implemente o
+   projeto conforme o pedido abaixo. EpaperProtocol.java est&#225; sem package:
+   adicione a declara&#231;&#227;o do package do projeto antes de incorpor&#225;-lo.
+4. Ap&#243;s o projeto completo e o Gradle sincronizado, na raiz desse projeto:
+      chmod +x gradlew
+      ./gradlew testDebugUnitTest assembleDebug
+   Esses comandos N&#195;O funcionam na pasta deste dossi&#234;: ela n&#227;o tem Gradle.
+5. O APK de debug de um m&#243;dulo convencional chamado app fica em:
+      app/build/outputs/apk/debug/app-debug.apk
+6. Instale o APK no Android para teste. Conecte a tela e-paper ao celular
+   com cabo/adaptador OTG adequado, aceite o pedido USB e fa&#231;a um teste
+   visual. O emulador sozinho n&#227;o valida a comunica&#231;&#227;o com o painel.
+
+TESTE OFFLINE DA CLASSE JAVA NO MAC
+Com um JDK dispon&#237;vel, dentro da pasta extra&#237;da:
+  mkdir -p build-test
+  javac -d build-test EpaperProtocol.java TestEpaperProtocol.java
+  java -cp build-test TestEpaperProtocol
+Isso s&#243; verifica o n&#250;cleo do protocolo; n&#227;o produz um APK.
+Se javac n&#227;o estiver no PATH, use o JDK incorporado no Android Studio.
+
+PEDIDO PRONTO PARA COLAR NO ASSISTENTE DO MAC
+
+Crie um projeto Android completo e gere um APK de debug para enviar fotos
+de um celular Android por USB OTG a uma tela e-paper Good Display 800x480
+de quatro cores. Use os arquivos deste dossi&#234; como evid&#234;ncia t&#233;cnica.
+N&#227;o confunda com copiar arquivos por MTP, Wi-Fi ou rodar EXE no Android.
+
+Use a biblioteca usb-serial-for-android, com suporte CH34x. Consulte o
+README oficial e fixe uma vers&#227;o publicada. Detecte VID=0x1A86/PID=0x7523.
+Declare android.hardware.usb.host. Solicite a permiss&#227;o USB via UsbManager
+e trate recusa, reconex&#227;o, desconex&#227;o, concorr&#234;ncia e libera&#231;&#227;o da porta.
+N&#227;o envie automaticamente ao conectar: o usu&#225;rio deve tocar em Enviar.
+
+Crie interface em portugu&#234;s com sele&#231;&#227;o de foto pelo seletor do sistema,
+pr&#233;via, ajuste proporcional para 800x480 (cortar ou preencher), rota&#231;&#227;o,
+convers&#227;o para preto/branco/amarelo/vermelho e op&#231;&#227;o de dithering.
+Normalize orienta&#231;&#227;o EXIF, componha transpar&#234;ncia sobre fundo branco e
+limite a decodifica&#231;&#227;o de imagens grandes para evitar falta de mem&#243;ria.
+Pr&#233;via e bytes enviados devem representar a mesma imagem final.
+
+Execute o trabalho de USB fora da thread da interface. Configure 115200,
+8N1, RTS=true e DTR=false. Envie o cabe&#231;alho de 12 bytes descrito no
+Protocolo-USB.txt e aguarde um ACK completo e v&#225;lido de 10 bytes com F1.
+Leituras podem vir fragmentadas ou concatenadas: implemente um parser
+com buffer, sincroniza&#231;&#227;o A0 50, checksum e timeout limitado. N&#227;o envie
+pixels ap&#243;s timeout ou resposta inv&#225;lida. N&#227;o invente bytes de resposta.
+
+O comprimento no cabe&#231;alho &#233; 48000 (BB 80), mas o payload de quatro cores
+tem 96000 bytes. Modelo C4. Cada byte empacota quatro pixels, MSB primeiro.
+Envie 23 blocos de 4096 e um de 1792, cada um seguido de 0D 0A; fa&#231;a pausa
+de 100 ms ap&#243;s cada bloco completo. N&#227;o trate 0D 0A como CRC calculado.
+Use o c&#243;digo Java inclu&#237;do ou porte-o preservando os testes conhecidos.
+
+Use timeout de escrita suficiente para o bloco inteiro; trate falhas e
+cancelamento sem repetir automaticamente uma transmiss&#227;o parcial.
+Se uma transmiss&#227;o ficar incompleta, encerre a sess&#227;o e oriente reiniciar
+o dispositivo antes de tentar novamente; n&#227;o invente comando de abortar.
+N&#227;o chame DiscardOutBuffer ap&#243;s o envio. N&#227;o anuncie atualiza&#231;&#227;o f&#237;sica
+conclu&#237;da sem evid&#234;ncia: o log do original apenas registra o fim do envio.
+Permita exportar localmente um log de diagn&#243;stico (TX/RX do cabe&#231;alho,
+ACK, tamanho de blocos, tempos e erros), sem envio de dados &#224; internet.
+
+Valide checksum, c&#243;digos de cor, tamanho, blocos, ACK fragmentado, timeout,
+desconex&#227;o e preserva&#231;&#227;o da pr&#233;via. Gere README com build no macOS e teste
+f&#237;sico. Separe claramente compila&#231;&#227;o, testes offline e teste no hardware.
+Entregue o APK, fonte completo e resultado real dos testes, sem afirmar
+que a comunica&#231;&#227;o f&#237;sica foi validada antes de testar o painel.
+
+PONTOS A CONFERIR NO HARDWARE
+- O VID/PID identifica o conversor CH340, n&#227;o prova o modelo do painel.
+- A p&#225;gina do fabricante &#233; compat&#237;vel com as evid&#234;ncias, mas o modelo
+  exato da etiqueta f&#237;sica n&#227;o foi lido.
+- Cores f&#237;sicas 10/11, rota&#231;&#227;o, ACK real, alimenta&#231;&#227;o pelo celular e
+  temporiza&#231;&#227;o ainda n&#227;o foram verificados com a nova implementa&#231;&#227;o.
+- N&#227;o h&#225; comando separado de refresh confirmado no caminho analisado.
+- F2 aparece em outra rotina; o callback que inicia os pixels usa F1.
+
+FONTES OFICIAIS
+https://www.good-display.com/product/640.html
+https://github.com/mik3y/usb-serial-for-android
+https://developer.android.com/develop/connectivity/usb/host
+https://developer.android.com/studio
+https://developer.android.com/studio/run
+https://developer.android.com/studio/build/building-cmdline
+</pre><h2>Protocolo-USB.txt</h2><pre>AN&#193;LISE DO IMAGETOUSB v4.0 — 30/09/2026
+
+RESULTADO
+O envio usa uma porta serial por USB (CH340). O programa converte pixels
+em um fluxo pr&#243;prio para a tela e-paper; n&#227;o copia um JPG para uma pasta.
+Esta an&#225;lise cobre o caminho 800 x 480 em quatro cores.
+
+EVID&#202;NCIAS LOCAIS
+- Registro do Windows: USB-SERIAL CH340 (COM3), servi&#231;o CH341SER_A64,
+  identificador USB VID_1A86 / PID_7523.
+- Janela do ImageToUSB: COM3, 4-Color, 7.5 Inch, Resolution:800x480,
+  Successful handshake, Data complete:100%, E-Paper Datas=96000.
+- Duas janelas do ImageToUSB estavam abertas. Uma continha o hist&#243;rico
+  de envio; a outra, apenas a mensagem de conex&#227;o.
+- SETUP.EXE cont&#233;m refer&#234;ncias a CH341SER.INF e drivers CH341.
+- ImageToUSB &#233; um execut&#225;vel .NET. Suas instru&#231;&#245;es IL foram lidas com
+  ReflectionOnlyLoadFrom/GetMethodBody, sem executar m&#233;todos do programa.
+- N&#227;o foi realizada captura ao vivo dos pacotes USB, nem recuperado o
+  tr&#225;fego de uma transfer&#234;ncia passada. Nenhum novo envio foi disparado.
+
+CONFIGURA&#199;&#195;O SERIAL
+SetPortProperty: baud=115200; RTS=true; ReadTimeout=-1.
+Demais par&#226;metros n&#227;o s&#227;o alterados nessa rotina: valores padr&#227;o da
+SerialPort (.NET), ou seja, 8 bits, sem paridade, 1 stop bit, sem handshake
+autom&#225;tico e DTR=false. Verificar no teste f&#237;sico a configura&#231;&#227;o Android.
+
+NEGOCIA&#199;&#195;O INICIAL (Shake_hands_data)
+O bot&#227;o Display envia 12 bytes:
+AA 55 E1 BB 80 04 C4 RR SS FF 0D 0A
+
+AA 55: prefixo.
+E1: comando inicial.
+BB 80: 48000 em big-endian = 800*480/8. Aten&#231;&#227;o: este campo N&#195;O &#233;
+       96000, mesmo no modo de quatro cores.
+04: quatro cores.
+C4: identificador selecionado pelo programa para 800x480.
+RR: 01 quando a rotina de detec&#231;&#227;o encontra vermelho; caso contr&#225;rio 00.
+SS: soma dos bytes 0..7, m&#243;dulo 256. &#201; E3 com RR=00; E4 com RR=01.
+FF 0D 0A: final do cabe&#231;alho.
+
+O teste de vermelho usado pelo programa &#233; R&gt;100, G&lt;=100 e B&lt;=100.
+O estado interno desse indicador pode depender de imagens anteriores;
+a implementa&#231;&#227;o nova calcula o indicador para a imagem atual.
+
+RESPOSTA ESPERADA (sp_DataReceived e callback)
+10 bytes, come&#231;ando por A0 50, comando F1 no byte 2, soma dos bytes
+0..7 no byte 8 e FF no byte 9. Os campos 3..7 n&#227;o s&#227;o interpretados
+no caminho de envio identificado. Depois desse ACK, Picture_data_send
+&#233; chamado. N&#227;o se deve enviar pixels sem receber/validar o ACK.
+
+H&#225; tamb&#233;m uma rotina SerialDataAnalysis que menciona F2, mas o callback
+de recep&#231;&#227;o que inicia o envio usa F1. N&#227;o confundir os dois caminhos.
+A implementa&#231;&#227;o nova deve juntar leituras parciais e impor timeout;
+o original faz uma leitura de at&#233; 10 bytes e n&#227;o valida o tamanho lido.
+
+FORMATO DOS PIXELS (GetPictureData_4Color)
+Para 800x480: linhas de cima para baixo, pixels da esquerda para direita.
+Quatro pixels por byte, primeiro pixel nos bits 7..6, depois 5..4, 3..2,
+1..0. S&#227;o 800*480/4 = 96000 bytes.
+
+C&#243;digo de pixel:
+00: preto (R,G,B &lt;= 50).
+01: branco (R,G,B &gt;= 200).
+11: outros pixels cuja m&#233;dia inteira (R+G+B)/3 &lt;=127; inclui vermelho puro.
+10: demais pixels; inclui amarelo puro.
+
+Exemplo: preto, branco, amarelo, vermelho -&gt; 00 01 10 11 -&gt; byte 1B.
+Tons de cinza intermedi&#225;rios tamb&#233;m viram 10/11 nessa fun&#231;&#227;o; para fotos,
+preparar antes uma paleta de quatro cores, opcionalmente com dithering.
+As cores f&#237;sicas dos c&#243;digos 10/11 ainda devem ser conferidas no painel.
+
+BLOCOS DE ENVIO (Picture_data_send)
+23 blocos com 4096 bytes de pixels cada + um &#250;ltimo de 1792 bytes.
+Depois de CADA bloco, o programa envia 0D 0A. A vari&#225;vel chamada data_CRC
+cont&#233;m apenas esses dois bytes: n&#227;o &#233; um CRC calculado sobre os pixels.
+O original espera 100 ms ap&#243;s cada bloco completo.
+N&#227;o h&#225; espera por ACK de cada bloco nesse caminho do programa.
+Total de pixels + separadores = 96048 bytes; com cabe&#231;alho = 96060 bytes.
+Esses blocos s&#227;o do protocolo da aplica&#231;&#227;o, n&#227;o os pacotes f&#237;sicos USB.
+
+O original exibe E-papaer update... ao terminar as chamadas de escrita;
+isso n&#227;o &#233; uma confirma&#231;&#227;o de que o painel concluiu a atualiza&#231;&#227;o.
+Tamb&#233;m chama DiscardOutBuffer ao final: uma nova implementa&#231;&#227;o deve
+garantir o t&#233;rmino efetivo das escritas, sem descartar bytes pendentes.
+
+PARA UM APLICATIVO ANDROID
+O celular deve atuar como USB host/OTG e reconhecer o CH340. Usar um
+driver Android CH34x, pedir permiss&#227;o USB pelo sistema e configurar a
+porta serial. SETUP.EXE &#233; um instalador Windows, n&#227;o um driver Android.
+Sequ&#234;ncia: escolher foto -&gt; ajustar para 800x480 -&gt; converter cores -&gt;
+conectar USB -&gt; enviar cabe&#231;alho -&gt; validar ACK -&gt; enviar blocos -&gt;
+aguardar a atualiza&#231;&#227;o f&#237;sica do painel.
+
+EpaperProtocol.java fornece o empacotamento e a valida&#231;&#227;o, sem depend&#234;ncia
+de Android ou de driver e sem abrir portas. N&#227;o &#233; um APK ou aplicativo
+completo. Os testes fornecidos s&#227;o offline e ainda n&#227;o foram executados; n&#227;o validam hardware.
+
+VALIDA&#199;&#195;O AINDA NECESS&#193;RIA
+Repetir um envio com captura iniciada antes (caso seja necess&#225;rio verificar
+o comportamento no fio), ou testar uma implementa&#231;&#227;o no dispositivo.
+Conferir resposta real, temporiza&#231;&#227;o, cores/orienta&#231;&#227;o e alimenta&#231;&#227;o OTG.
+USBPcap/Wireshark n&#227;o foram encontrados no PATH nem nos diret&#243;rios padr&#227;o
+consultados; isso n&#227;o exclui instala&#231;&#245;es em outros locais.
+
+REFER&#202;NCIAS
+Fabricante (lista o mesmo software e driver):
+https://www.good-display.com/product/640.html
+Android USB host:
+https://developer.android.com/develop/connectivity/usb/host
+Biblioteca de serial Android com suporte CH34x:
+https://github.com/mik3y/usb-serial-for-android
+
+IDENTIFICA&#199;&#195;O DOS ARQUIVOS ANALISADOS (SHA-256)
+ImageToUSB v4.0.exe:
+8FE1EE060CC4BB73767369DFC397DDE87518B7A0B353F42591CBEF2224BB5BC2
+SETUP.EXE:
+7E2665E90B09B6D4C72C5DF7E09433178A0F4042B1313B3C40A876CBD12A247A
+
+NOTA DE TESTE: a tentativa de executar javac nesta sess&#227;o foi bloqueada
+com Access is denied. O c&#243;digo Java ainda n&#227;o foi compilado/testado.
+
+
+</pre><h2>EpaperProtocol.java</h2><pre>import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/** Protocol reconstructed statically from the supplied ImageToUSB v4.0.
+ * Scope: 800x480, four colors. NOT yet verified with a live device.
+ * No USB operations are performed by this class.
+ */
+public final class EpaperProtocol {
+    public static final int WIDTH = 800, HEIGHT = 480;
+    public static final int BAUD_RATE = 115200, BLOCK_SIZE = 4096;
+    public static final int VENDOR_ID = 0x1A86, PRODUCT_ID = 0x7523;
+    private EpaperProtocol() {}
+
+    // Matches GetPictureData_4Color, including its coarse RGB thresholds.
+    // For photographs, quantize/dither to the display palette BEFORE this step.
+    public static int pixelCode(int rgb) {
+        int r = (rgb &gt;&gt;&gt; 16) &amp; 255, g = (rgb &gt;&gt;&gt; 8) &amp; 255, b = rgb &amp; 255;
+        if (r &lt;= 50 &amp;&amp; g &lt;= 50 &amp;&amp; b &lt;= 50) return 0;
+        if (r &gt;= 200 &amp;&amp; g &gt;= 200 &amp;&amp; b &gt;= 200) return 1;
+        return ((r + g + b) / 3 &lt;= 127) ? 3 : 2;
+    }
+
+    /** Opaque RGB pixels, row-major, exactly 800x480. Alpha is ignored. */
+    public static byte[] pack(int[] rgb) {
+        if (rgb == null || rgb.length != WIDTH * HEIGHT)
+            throw new IllegalArgumentException(&quot;Expected 800x480 pixels&quot;);
+        byte[] out = new byte[WIDTH * HEIGHT / 4];
+        for (int i = 0; i &lt; rgb.length; i += 4) {
+            out[i / 4] = (byte) ((pixelCode(rgb[i]) &lt;&lt; 6)
+                | (pixelCode(rgb[i+1]) &lt;&lt; 4)
+                | (pixelCode(rgb[i+2]) &lt;&lt; 2) | pixelCode(rgb[i+3]));
+        }
+        return out;
+    }
+
+    public static boolean containsRed(int[] rgb) {
+        if (rgb == null || rgb.length != WIDTH * HEIGHT)
+            throw new IllegalArgumentException(&quot;Expected 800x480 pixels&quot;);
+        for (int pixel : rgb) {
+            if (((pixel &gt;&gt;&gt; 16) &amp; 255) &gt; 100 &amp;&amp; ((pixel &gt;&gt;&gt; 8) &amp; 255) &lt;= 100
+                &amp;&amp; (pixel &amp; 255) &lt;= 100) return true;
+        }
+        return false;
+    }
+
+    /** The length field is the ONE-bit plane size (48000), even for 4 colors. */
+    public static byte[] handshake(boolean redPresent) {
+        byte[] frame = {(byte)0xAA, 0x55, (byte)0xE1, (byte)0xBB, (byte)0x80,
+            4, (byte)0xC4, (byte)(redPresent ? 1 : 0), 0, (byte)0xFF, 13, 10};
+        int sum = 0;
+        for (int i = 0; i &lt; 8; i++) sum += frame[i] &amp; 255;
+        frame[8] = (byte)sum;
+        return frame;
+    }
+
+    /** Reassemble a full 10-byte frame before calling: serial reads may split it. */
+    public static boolean isHandshakeAck(byte[] frame) {
+        if (frame == null || frame.length != 10 || (frame[0] &amp; 255) != 0xA0
+            || (frame[1] &amp; 255) != 0x50 || (frame[2] &amp; 255) != 0xF1
+            || (frame[9] &amp; 255) != 0xFF) return false;
+        int sum = 0;
+        for (int i = 0; i &lt; 8; i++) sum += frame[i] &amp; 255;
+        return (sum &amp; 255) == (frame[8] &amp; 255);
+    }
+
+    /** Send only AFTER a valid handshake response. Each packet includes CR LF.
+     * Match the original 100 ms pause after each full block; handle write errors.
+     * These are application blocks, not physical USB packet boundaries.
+     */
+    public static List&lt;byte[]&gt; packets(byte[] pixels) {
+        if (pixels == null || pixels.length != 96000)
+            throw new IllegalArgumentException(&quot;Expected 96000 bytes&quot;);
+        List&lt;byte[]&gt; out = new ArrayList&lt;&gt;();
+        for (int offset = 0; offset &lt; pixels.length; offset += BLOCK_SIZE) {
+            int count = Math.min(BLOCK_SIZE, pixels.length - offset);
+            byte[] packet = Arrays.copyOfRange(pixels, offset, offset + count + 2);
+            packet[count] = 13;
+            packet[count + 1] = 10;
+            out.add(packet);
+        }
+        return out;
+    }
+}
+</pre><h2>TestEpaperProtocol.java</h2><pre>import java.util.Arrays;
+import java.util.List;
+public class TestEpaperProtocol {
+    static void require(boolean value, String message) {
+        if (!value) throw new AssertionError(message);
+    }
+    public static void main(String[] args) {
+        byte[] expected = {(byte)0xAA,0x55,(byte)0xE1,(byte)0xBB,(byte)0x80,4,
+            (byte)0xC4,0,(byte)0xE3,(byte)0xFF,13,10};
+        require(Arrays.equals(expected, EpaperProtocol.handshake(false)), &quot;handshake&quot;);
+        require((EpaperProtocol.handshake(true)[8] &amp; 255) == 0xE4, &quot;red checksum&quot;);
+        int[] rgb = new int[800*480];
+        for(int i=0; i&lt;rgb.length; i+=4) {
+            rgb[i]=0; rgb[i+1]=0xffffff; rgb[i+2]=0xffff00; rgb[i+3]=0xff0000;
+        }
+        byte[] packed = EpaperProtocol.pack(rgb);
+        require(packed.length == 96000, &quot;payload size&quot;);
+        for(byte b: packed) require(b==0x1b, &quot;pixel order or color mapping&quot;);
+        require(EpaperProtocol.containsRed(rgb), &quot;red flag&quot;);
+        List&lt;byte[]&gt; packets=EpaperProtocol.packets(packed);
+        require(packets.size()==24 &amp;&amp; packets.get(23).length==1794, &quot;packet count/tail&quot;);
+        int offset=0, total=0;
+        for(byte[] p: packets) {
+            require(p[p.length-2]==13 &amp;&amp; p[p.length-1]==10, &quot;terminator&quot;);
+            for(int i=0;i&lt;p.length-2;i++) require(p[i]==packed[offset++], &quot;payload intact&quot;);
+            total+=p.length;
+        }
+        require(offset==96000 &amp;&amp; total==96048, &quot;wire data size&quot;);
+        byte[] ack={(byte)0xA0,0x50,(byte)0xF1,0,0,0,0,0,(byte)0xE1,(byte)0xFF};
+        require(EpaperProtocol.isHandshakeAck(ack), &quot;valid synthetic ACK&quot;);
+        ack[8]=0;
+        require(!EpaperProtocol.isHandshakeAck(ack), &quot;bad checksum rejected&quot;);
+        require(!EpaperProtocol.isHandshakeAck(new byte[3]), &quot;partial ACK rejected&quot;);
+        System.out.println(&quot;PASS: handshake, RGB packing, red flag, 24 blocks, payload preservation, ACK validation. No device accessed.&quot;);
+    }
+}
+</pre></html>

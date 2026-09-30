@@ -1,0 +1,115 @@
+CONTINUAR NO MAC: ANDROID -> USB OTG -> TELA E-PAPER
+
+OBJETIVO
+Criar um aplicativo Android para selecionar uma foto e enviá-la diretamente
+à tela e-paper pelo cabo, substituindo o ImageToUSB do Windows.
+O Mac será usado para desenvolver e compilar o APK; o aplicativo rodará
+no celular Android. O driver SETUP.EXE não deve ser instalado no Mac.
+
+ESTADO REAL DA ENTREGA
+Este pacote é um dossiê de engenharia e uma base de protocolo Java.
+Ainda NÃO é um projeto Android completo, nem um APK. Faltam interface,
+integração USB, processamento da imagem, tratamento de conexão e build.
+A análise foi estática, com leitura do registro do Windows e do log da
+janela do ImageToUSB. Não houve captura USB nem teste da reprodução.
+A execução de javac no Windows retornou Access is denied; nenhum teste
+Java foi executado. Não interpretar os testes incluídos como aprovação.
+
+ARQUIVOS
+Protocolo-USB.txt: descobertas, comandos, limites e hashes dos executáveis.
+EpaperProtocol.java: empacotamento, cabeçalho, ACK e divisão em blocos.
+TestEpaperProtocol.java: teste offline, sem abrir a porta USB.
+ImageToUSB.il.txt: instruções IL extraídas para conferir a análise.
+Dossie-Mac.html: leitura em um único arquivo no navegador, com código.
+
+COMO CONTINUAR
+1. Transfira o ZIP para o Mac e extraia-o. Os caminhos C:/ da conversa
+   pertencem ao Windows e não funcionarão diretamente no Mac.
+2. Instale/abra Android Studio para Mac e deixe o assistente configurar
+   o SDK. Use o JDK incorporado e versões de Gradle/AGP compatíveis com
+   o projeto criado pelo Android Studio.
+3. Entregue esta pasta a um assistente de programação, ou implemente o
+   projeto conforme o pedido abaixo. EpaperProtocol.java está sem package:
+   adicione a declaração do package do projeto antes de incorporá-lo.
+4. Após o projeto completo e o Gradle sincronizado, na raiz desse projeto:
+      chmod +x gradlew
+      ./gradlew testDebugUnitTest assembleDebug
+   Esses comandos NÃO funcionam na pasta deste dossiê: ela não tem Gradle.
+5. O APK de debug de um módulo convencional chamado app fica em:
+      app/build/outputs/apk/debug/app-debug.apk
+6. Instale o APK no Android para teste. Conecte a tela e-paper ao celular
+   com cabo/adaptador OTG adequado, aceite o pedido USB e faça um teste
+   visual. O emulador sozinho não valida a comunicação com o painel.
+
+TESTE OFFLINE DA CLASSE JAVA NO MAC
+Com um JDK disponível, dentro da pasta extraída:
+  mkdir -p build-test
+  javac -d build-test EpaperProtocol.java TestEpaperProtocol.java
+  java -cp build-test TestEpaperProtocol
+Isso só verifica o núcleo do protocolo; não produz um APK.
+Se javac não estiver no PATH, use o JDK incorporado no Android Studio.
+
+PEDIDO PRONTO PARA COLAR NO ASSISTENTE DO MAC
+
+Crie um projeto Android completo e gere um APK de debug para enviar fotos
+de um celular Android por USB OTG a uma tela e-paper Good Display 800x480
+de quatro cores. Use os arquivos deste dossiê como evidência técnica.
+Não confunda com copiar arquivos por MTP, Wi-Fi ou rodar EXE no Android.
+
+Use a biblioteca usb-serial-for-android, com suporte CH34x. Consulte o
+README oficial e fixe uma versão publicada. Detecte VID=0x1A86/PID=0x7523.
+Declare android.hardware.usb.host. Solicite a permissão USB via UsbManager
+e trate recusa, reconexão, desconexão, concorrência e liberação da porta.
+Não envie automaticamente ao conectar: o usuário deve tocar em Enviar.
+
+Crie interface em português com seleção de foto pelo seletor do sistema,
+prévia, ajuste proporcional para 800x480 (cortar ou preencher), rotação,
+conversão para preto/branco/amarelo/vermelho e opção de dithering.
+Normalize orientação EXIF, componha transparência sobre fundo branco e
+limite a decodificação de imagens grandes para evitar falta de memória.
+Prévia e bytes enviados devem representar a mesma imagem final.
+
+Execute o trabalho de USB fora da thread da interface. Configure 115200,
+8N1, RTS=true e DTR=false. Envie o cabeçalho de 12 bytes descrito no
+Protocolo-USB.txt e aguarde um ACK completo e válido de 10 bytes com F1.
+Leituras podem vir fragmentadas ou concatenadas: implemente um parser
+com buffer, sincronização A0 50, checksum e timeout limitado. Não envie
+pixels após timeout ou resposta inválida. Não invente bytes de resposta.
+
+O comprimento no cabeçalho é 48000 (BB 80), mas o payload de quatro cores
+tem 96000 bytes. Modelo C4. Cada byte empacota quatro pixels, MSB primeiro.
+Envie 23 blocos de 4096 e um de 1792, cada um seguido de 0D 0A; faça pausa
+de 100 ms após cada bloco completo. Não trate 0D 0A como CRC calculado.
+Use o código Java incluído ou porte-o preservando os testes conhecidos.
+
+Use timeout de escrita suficiente para o bloco inteiro; trate falhas e
+cancelamento sem repetir automaticamente uma transmissão parcial.
+Se uma transmissão ficar incompleta, encerre a sessão e oriente reiniciar
+o dispositivo antes de tentar novamente; não invente comando de abortar.
+Não chame DiscardOutBuffer após o envio. Não anuncie atualização física
+concluída sem evidência: o log do original apenas registra o fim do envio.
+Permita exportar localmente um log de diagnóstico (TX/RX do cabeçalho,
+ACK, tamanho de blocos, tempos e erros), sem envio de dados à internet.
+
+Valide checksum, códigos de cor, tamanho, blocos, ACK fragmentado, timeout,
+desconexão e preservação da prévia. Gere README com build no macOS e teste
+físico. Separe claramente compilação, testes offline e teste no hardware.
+Entregue o APK, fonte completo e resultado real dos testes, sem afirmar
+que a comunicação física foi validada antes de testar o painel.
+
+PONTOS A CONFERIR NO HARDWARE
+- O VID/PID identifica o conversor CH340, não prova o modelo do painel.
+- A página do fabricante é compatível com as evidências, mas o modelo
+  exato da etiqueta física não foi lido.
+- Cores físicas 10/11, rotação, ACK real, alimentação pelo celular e
+  temporização ainda não foram verificados com a nova implementação.
+- Não há comando separado de refresh confirmado no caminho analisado.
+- F2 aparece em outra rotina; o callback que inicia os pixels usa F1.
+
+FONTES OFICIAIS
+https://www.good-display.com/product/640.html
+https://github.com/mik3y/usb-serial-for-android
+https://developer.android.com/develop/connectivity/usb/host
+https://developer.android.com/studio
+https://developer.android.com/studio/run
+https://developer.android.com/studio/build/building-cmdline

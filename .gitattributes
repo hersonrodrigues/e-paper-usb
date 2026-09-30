@@ -1,0 +1,2 @@
+# Preserve the original engineering dossier byte-for-byte, including Windows line endings.
+android/evidence/** -text -whitespace

@@ -1,0 +1,96 @@
+{
+  "model": "GDP075FU1",
+  "source": {
+    "url": "https://v4.cecdn.yun300.cn/100001_1909185148/EN-GDP075FU1.pdf",
+    "local_pdf": "vendor/EN-GDP075FU1.pdf",
+    "revision": "V1.0",
+    "date": "2024-12-16",
+    "retrieved": "2026-09-30",
+    "sha256": "73d73141e7b681e6bd5f1be560064fd9cec430d98c6ed7402d029903bf262271",
+    "page_numbering": "PDF pages including cover"
+  },
+  "display": {
+    "diagonal_inches": 7.5,
+    "width_px": 800,
+    "height_px": 480,
+    "colors": [
+      "black",
+      "white",
+      "red",
+      "yellow"
+    ],
+    "software_color_mode": "4-Color",
+    "refresh_seconds": 20,
+    "retains_image_without_power": true,
+    "source_pages": [
+      4,
+      5,
+      8
+    ]
+  },
+  "connection": {
+    "connector": "Micro USB",
+    "usb_version": "2.0",
+    "serial_bridge": "CH340",
+    "desktop_software": "ImageToUSB",
+    "desktop_image_formats": [
+      "BMP",
+      "JPG"
+    ],
+    "source_pages": [
+      5,
+      6
+    ]
+  },
+  "controller": {
+    "mcu": "STM32F103C6T6",
+    "ram_kb": 10,
+    "rom_kb": 64,
+    "flash_as_printed": "2M",
+    "flash_unit_specified": false,
+    "source_pages": [
+      5
+    ]
+  },
+  "power": {
+    "voltage_v": 5,
+    "refresh_power_mw_less_than": 200,
+    "source_pages": [
+      4
+    ]
+  },
+  "physical": {
+    "dimensions_mm": [
+      196,
+      138,
+      12
+    ],
+    "weight_g_approx": 204,
+    "source_pages": [
+      4
+    ]
+  },
+  "environment": {
+    "operating_temperature_c": [
+      0,
+      40
+    ],
+    "storage_temperature_c": [
+      -25,
+      70
+    ],
+    "operating_humidity_percent": [
+      40,
+      70
+    ],
+    "source_pages": [
+      5
+    ]
+  },
+  "implementation": {
+    "protocol": "imagetousb40",
+    "payload_bytes_four_color": 96000,
+    "protocol_source": "Static inspection of user-provided ImageToUSB v4.0.exe; the PDF contains no byte-level specification",
+    "hardware_refresh_verified": false
+  }
+}

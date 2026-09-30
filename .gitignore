@@ -1,0 +1,28 @@
+# Local environments, credentials, signing material and editor state
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.pem
+*.key
+.DS_Store
+.idea/
+.vscode/
+.agents/
+.codex/
+
+# Generated files and machine/device-specific diagnostics
+node_modules/
+__pycache__/
+*.py[cod]
+.gradle/
+**/build/
+**/local.properties
+logs/
+android/reports/
+android/deliverables/
+*.apk
+*.aab

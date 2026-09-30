@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>E-paper Studio</title><link rel="stylesheet" href="/src/style.css"><script type="module" src="/src/app.js"></script></head>
+<body>
+<header><a class="brand" href="/" aria-label="E-paper Studio home"><span class="brand-icon">e.</span> E-paper Studio</a><span class="local"><span class="dot"></span> Local workspace</span></header>
+<main>
+<div class="intro"><div><div class="eyebrow">FROM PIXELS TO PAPER</div><h1>A new look for your display.</h1><p>Choose an image. Shape it for e-paper. Send it over USB.</p></div><span class="tag">GOOD DISPLAY · IMAGE TOOLS</span></div>
+<div class="workspace">
+<aside>
+<fieldset id="image-controls">
+<section class="card"><div class="section-title"><span class="step">01</span><h2>Your image</h2></div>
+<label class="drop-zone" id="drop-zone" for="image-file"><span class="upload-icon">↥</span><strong>Choose an image</strong><span>or drop it here</span><small>PNG, JPEG, WebP, BMP · up to 25 MB</small></label><input class="visually-hidden" type="file" id="image-file" accept="image/png,image/jpeg,image/webp,image/bmp"><p id="file-name" class="file-name">Images stay on your computer.</p><button class="text-button" id="sample">Try a sample image ↗</button></section>
+<section class="card"><div class="section-title"><span class="step">02</span><h2>Make it fit</h2></div>
+<label for="size">Canvas size</label><select id="size"><option value="800,480">800 × 480</option><option value="400,300">400 × 300</option><option value="296,128">296 × 128</option><option value="250,122">250 × 122</option><option value="200,200">200 × 200</option><option value="480,800">480 × 800</option><option value="custom">Custom dimensions</option></select>
+<div class="two-cols"><div><label for="width">Width (px)</label><input id="width" type="number" min="1" max="2048" value="800"></div><div><label for="height">Height (px)</label><input id="height" type="number" min="1" max="2048" value="480"></div></div>
+<label for="mode">Display colors</label><select id="mode"><option value="mono">Black & white</option><option value="tri">Black / white / red</option><option value="four" selected>Black / white / red / yellow</option><option value="six">Spectra 6 · USB format</option></select>
+<div class="two-cols"><div><label for="fit">Image fit</label><select id="fit"><option value="contain">Fit · keep all</option><option value="cover">Fill · crop edges</option><option value="stretch">Stretch</option></select></div><div><label for="rotation">Rotate</label><select id="rotation"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></div></div>
+<label class="range-label" for="contrast">Contrast <output id="contrast-value">100%</output></label><input id="contrast" type="range" min="50" max="200" value="100">
+<label class="range-label" for="threshold">B&W threshold <output id="threshold-value">140</output></label><input id="threshold" type="range" min="1" max="254" value="140">
+<label class="check"><input type="checkbox" id="dither" checked><span>Floyd–Steinberg dithering<small>Smoother shades with a limited palette</small></span></label>
+</section></fieldset>
+</aside>
+<div class="right-column">
+<section class="card preview-card"><div class="preview-top"><div><div class="eyebrow">LIVE PREVIEW</div><h2>Every pixel, in place.</h2></div><div class="tabs" aria-label="Preview mode"><button id="show-output" aria-pressed="true">E-paper</button><button id="show-original" aria-pressed="false">Original</button></div></div>
+<div class="preview-stage"><div id="empty"><div class="empty-icon">▧</div><h3>Your next display starts here</h3><p>Add an image or try the sample to see the conversion.</p></div><canvas id="preview" hidden aria-label="Image preview"></canvas></div>
+<div class="preview-footer"><span id="image-meta">No image loaded</span><span id="byte-meta">—</span></div>
+<div class="export-row"><p>A preview of the palette, not the panel’s exact colors.</p><button id="export-png" disabled>Save preview</button><button id="export-c" disabled>Export .c ↓</button></div>
+</section>
+<section class="card connection-card"><div class="section-title"><span class="step">03</span><h2>Send to your display</h2><span id="connection-state" class="status">Not connected</span></div>
+<label for="protocol">Upload software / firmware</label><select id="protocol"><option value="imagetousb40">GDP075FU1 · ImageToUSB v4.0</option><option value="unknown">Export only</option><option value="good-display-usb">Good Display ESP32 · USB web-tool firmware</option></select>
+<p id="protocol-help" class="hint">GDP075FU1 uses an 800 × 480 canvas and 4 colors: black, white, red, yellow. Connect its Micro USB cable and close the Windows uploader before choosing the port.</p>
+<label class="check" id="compatibility-row" hidden><input type="checkbox" id="compatible"><span>My board runs firmware compatible with Good Display’s USB web tool, with this resolution and color mode.</span></label>
+<div class="connection-actions"><button id="connect">Choose serial port</button><button id="disconnect" disabled>Disconnect</button><button class="primary" id="send" disabled>Send image <span>↗</span></button><button id="cancel" hidden>Stop transfer</button></div>
+<progress id="progress" value="0" max="100" aria-label="Upload progress"></progress>
+<p id="notice" role="status" aria-live="polite">Ready for GDP075FU1: choose an image to preview in 800 × 480, four colors.</p>
+<details><summary>Connection activity</summary><pre id="log" aria-label="Connection activity log">No serial activity yet.</pre></details>
+</section>
+</div></div>
+<footer><span>Built for the quiet magic of e-paper.</span><a href="https://www.good-display.com/public/html/pdfjs/viewer/viewernew.html?file=https://v4.cecdn.yun300.cn/100001_1909185148/EN-GDP075FU1.pdf" target="_blank" rel="noreferrer">GDP075FU1 manual ↗</a></footer>
+</main>
+</body></html>

@@ -1,0 +1,122 @@
+ANÁLISE DO IMAGETOUSB v4.0 — 30/09/2026
+
+RESULTADO
+O envio usa uma porta serial por USB (CH340). O programa converte pixels
+em um fluxo próprio para a tela e-paper; não copia um JPG para uma pasta.
+Esta análise cobre o caminho 800 x 480 em quatro cores.
+
+EVIDÊNCIAS LOCAIS
+- Registro do Windows: USB-SERIAL CH340 (COM3), serviço CH341SER_A64,
+  identificador USB VID_1A86 / PID_7523.
+- Janela do ImageToUSB: COM3, 4-Color, 7.5 Inch, Resolution:800x480,
+  Successful handshake, Data complete:100%, E-Paper Datas=96000.
+- Duas janelas do ImageToUSB estavam abertas. Uma continha o histórico
+  de envio; a outra, apenas a mensagem de conexão.
+- SETUP.EXE contém referências a CH341SER.INF e drivers CH341.
+- ImageToUSB é um executável .NET. Suas instruções IL foram lidas com
+  ReflectionOnlyLoadFrom/GetMethodBody, sem executar métodos do programa.
+- Não foi realizada captura ao vivo dos pacotes USB, nem recuperado o
+  tráfego de uma transferência passada. Nenhum novo envio foi disparado.
+
+CONFIGURAÇÃO SERIAL
+SetPortProperty: baud=115200; RTS=true; ReadTimeout=-1.
+Demais parâmetros não são alterados nessa rotina: valores padrão da
+SerialPort (.NET), ou seja, 8 bits, sem paridade, 1 stop bit, sem handshake
+automático e DTR=false. Verificar no teste físico a configuração Android.
+
+NEGOCIAÇÃO INICIAL (Shake_hands_data)
+O botão Display envia 12 bytes:
+AA 55 E1 BB 80 04 C4 RR SS FF 0D 0A
+
+AA 55: prefixo.
+E1: comando inicial.
+BB 80: 48000 em big-endian = 800*480/8. Atenção: este campo NÃO é
+       96000, mesmo no modo de quatro cores.
+04: quatro cores.
+C4: identificador selecionado pelo programa para 800x480.
+RR: 01 quando a rotina de detecção encontra vermelho; caso contrário 00.
+SS: soma dos bytes 0..7, módulo 256. É E3 com RR=00; E4 com RR=01.
+FF 0D 0A: final do cabeçalho.
+
+O teste de vermelho usado pelo programa é R>100, G<=100 e B<=100.
+O estado interno desse indicador pode depender de imagens anteriores;
+a implementação nova calcula o indicador para a imagem atual.
+
+RESPOSTA ESPERADA (sp_DataReceived e callback)
+10 bytes, começando por A0 50, comando F1 no byte 2, soma dos bytes
+0..7 no byte 8 e FF no byte 9. Os campos 3..7 não são interpretados
+no caminho de envio identificado. Depois desse ACK, Picture_data_send
+é chamado. Não se deve enviar pixels sem receber/validar o ACK.
+
+Há também uma rotina SerialDataAnalysis que menciona F2, mas o callback
+de recepção que inicia o envio usa F1. Não confundir os dois caminhos.
+A implementação nova deve juntar leituras parciais e impor timeout;
+o original faz uma leitura de até 10 bytes e não valida o tamanho lido.
+
+FORMATO DOS PIXELS (GetPictureData_4Color)
+Para 800x480: linhas de cima para baixo, pixels da esquerda para direita.
+Quatro pixels por byte, primeiro pixel nos bits 7..6, depois 5..4, 3..2,
+1..0. São 800*480/4 = 96000 bytes.
+
+Código de pixel:
+00: preto (R,G,B <= 50).
+01: branco (R,G,B >= 200).
+11: outros pixels cuja média inteira (R+G+B)/3 <=127; inclui vermelho puro.
+10: demais pixels; inclui amarelo puro.
+
+Exemplo: preto, branco, amarelo, vermelho -> 00 01 10 11 -> byte 1B.
+Tons de cinza intermediários também viram 10/11 nessa função; para fotos,
+preparar antes uma paleta de quatro cores, opcionalmente com dithering.
+As cores físicas dos códigos 10/11 ainda devem ser conferidas no painel.
+
+BLOCOS DE ENVIO (Picture_data_send)
+23 blocos com 4096 bytes de pixels cada + um último de 1792 bytes.
+Depois de CADA bloco, o programa envia 0D 0A. A variável chamada data_CRC
+contém apenas esses dois bytes: não é um CRC calculado sobre os pixels.
+O original espera 100 ms após cada bloco completo.
+Não há espera por ACK de cada bloco nesse caminho do programa.
+Total de pixels + separadores = 96048 bytes; com cabeçalho = 96060 bytes.
+Esses blocos são do protocolo da aplicação, não os pacotes físicos USB.
+
+O original exibe E-papaer update... ao terminar as chamadas de escrita;
+isso não é uma confirmação de que o painel concluiu a atualização.
+Também chama DiscardOutBuffer ao final: uma nova implementação deve
+garantir o término efetivo das escritas, sem descartar bytes pendentes.
+
+PARA UM APLICATIVO ANDROID
+O celular deve atuar como USB host/OTG e reconhecer o CH340. Usar um
+driver Android CH34x, pedir permissão USB pelo sistema e configurar a
+porta serial. SETUP.EXE é um instalador Windows, não um driver Android.
+Sequência: escolher foto -> ajustar para 800x480 -> converter cores ->
+conectar USB -> enviar cabeçalho -> validar ACK -> enviar blocos ->
+aguardar a atualização física do painel.
+
+EpaperProtocol.java fornece o empacotamento e a validação, sem dependência
+de Android ou de driver e sem abrir portas. Não é um APK ou aplicativo
+completo. Os testes fornecidos são offline e ainda não foram executados; não validam hardware.
+
+VALIDAÇÃO AINDA NECESSÁRIA
+Repetir um envio com captura iniciada antes (caso seja necessário verificar
+o comportamento no fio), ou testar uma implementação no dispositivo.
+Conferir resposta real, temporização, cores/orientação e alimentação OTG.
+USBPcap/Wireshark não foram encontrados no PATH nem nos diretórios padrão
+consultados; isso não exclui instalações em outros locais.
+
+REFERÊNCIAS
+Fabricante (lista o mesmo software e driver):
+https://www.good-display.com/product/640.html
+Android USB host:
+https://developer.android.com/develop/connectivity/usb/host
+Biblioteca de serial Android com suporte CH34x:
+https://github.com/mik3y/usb-serial-for-android
+
+IDENTIFICAÇÃO DOS ARQUIVOS ANALISADOS (SHA-256)
+ImageToUSB v4.0.exe:
+8FE1EE060CC4BB73767369DFC397DDE87518B7A0B353F42591CBEF2224BB5BC2
+SETUP.EXE:
+7E2665E90B09B6D4C72C5DF7E09433178A0F4042B1313B3C40A876CBD12A247A
+
+NOTA DE TESTE: a tentativa de executar javac nesta sessão foi bloqueada
+com Access is denied. O código Java ainda não foi compilado/testado.
+
+
